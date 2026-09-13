@@ -116,6 +116,8 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "users.CustomUser"
 
+FRONTEND_URL = "https://s1ndze-shoop-1.onrender.com"
+
 CORS_ALLOWED_ORIGINS = [
     FRONTEND_URL,
     "http://localhost:5173",
@@ -124,6 +126,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    FRONTEND_URL,
     "https://s1ndze-shoop.onrender.com",
 ]
 
