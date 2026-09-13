@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-ink: #111111;
+  --color-paper: #ffffff;
+  --color-bg: #f5f5f5;
+  --color-muted: #717171;
+  --color-line: #e8e8e8;
+  --color-accent: #111111;
+  --color-accent-soft: #333333;
+  --color-sale: #e53935;
+  --color-ok: #2e7d32;
+  --font-display: "Manrope", "Segoe UI", sans-serif;
+  --font-body: "Manrope", "Segoe UI", sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg text-ink antialiased;
+    font-family: var(--font-body);
+    min-height: 100vh;
+  }
+
+  .dark body,
+  html.dark body {
+    background: #0d0d0d;
+    color: #f5f5f5;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+}
+
+@layer utilities {
+  .text-accent { color: var(--color-accent); }
+  .bg-accent { background-color: var(--color-accent); }
+  .border-line { border-color: var(--color-line); }
+  .dark .border-line { border-color: #2a2a2a; }
+  .bg-bg { background-color: var(--color-bg); }
+  .dark .bg-bg { background-color: #0d0d0d; }
+  .text-sale { color: var(--color-sale); }
+  .bg-sale { background-color: var(--color-sale); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes softPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.anim-fade-up {
+  animation: fadeUp 0.45s ease both;
+}
+.anim-fade-in {
+  animation: fadeIn 0.35s ease both;
+}
+.anim-slide-in {
+  animation: slideInRight 0.35s ease both;
+}
+.anim-scale-in {
+  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Staggered entrance for grids: add [style="--stagger: N"] on children */
+.stagger-item {
+  animation: fadeUp 0.5s ease both;
+  animation-delay: calc(var(--stagger, 0) * 60ms);
+}
+
+.card-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+.dark .card-lift:hover {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.skeleton-shimmer {
+  background: #ececec linear-gradient(to right, #ececec 8%, #f7f7f7 18%, #ececec 33%) no-repeat;
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+.dark .skeleton-shimmer {
+  background: #1f1f1f linear-gradient(to right, #1f1f1f 8%, #2a2a2a 18%, #1f1f1f 33%) no-repeat;
+  background-size: 800px 100%;
+}
+
+/* Nicer focus ring across the site, keyboard users only */
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.dark :focus-visible {
+  outline-color: #fff;
+}
+
+::selection {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+.dark ::selection {
+  background: #fff;
+  color: #111;
+}
+
+/* Slim, understated scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #333;
+  background-clip: padding-box;
+}

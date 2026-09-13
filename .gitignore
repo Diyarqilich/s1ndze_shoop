@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+*.sqlite3
+db.sqlite3
+backend/media/
+backend/staticfiles/
+.env
+*.log
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+*.local
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Coverage / tests
+.coverage
+htmlcov/
+.pytest_cache/
