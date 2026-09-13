@@ -7,7 +7,7 @@ venv/
 env/
 *.sqlite3
 db.sqlite3
-backend/media/
+
 backend/staticfiles/
 .env
 *.log
