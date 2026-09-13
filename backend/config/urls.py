@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 from django.conf.urls.static import static
+from django.views.static import serve
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
@@ -19,15 +20,13 @@ urlpatterns = [
     path("api/notifications/", include("notifications.urls")),
     path("api/seller/", include("products.seller_urls")),
     path("api/admin/", include("users.admin_urls")),
-
-from django.views.static import serve
-from django.urls import re_path
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
+# Раздача медиафайлов в продакшене (Render)
 urlpatterns += [
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
