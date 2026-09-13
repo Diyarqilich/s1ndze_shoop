@@ -17,4 +17,4 @@ COPY . .
 
 RUN python manage.py collectstatic --noinput
 
-CMD python manage.py migrate && python manage.py loaddata backend/data.json || python manage.py loaddata data.json && gunicorn config.wsgi:application --bind 0.0.0.0:10000
+CMD python manage.py migrate && python manage.py loaddata data.json && gunicorn config.wsgi:application --bind 0.0.0.0:10000
