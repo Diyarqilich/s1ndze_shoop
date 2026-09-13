@@ -17,4 +17,4 @@ COPY . .
 
 RUN python manage.py collectstatic --noinput
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && python create_admin.py && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000}"]
+CMD python manage.py migrate && python manage.py loaddata data.json && gunicorn config.wsgi:application --bind 0.0.0.0:8000
