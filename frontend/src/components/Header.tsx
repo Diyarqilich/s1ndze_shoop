@@ -5,6 +5,7 @@ import {
   Heart,
   Menu,
   Moon,
+  PackagePlus,
   Search,
   ShoppingBag,
   Sun,
@@ -67,7 +68,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-white/95 backdrop-blur dark:border-[#2a2a2a] dark:bg-[#111]/95">
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-3 py-2.5 sm:px-4 lg:px-6">
-        <button className="rounded-lg p-2 hover:bg-bg lg:hidden dark:hover:bg-[#222]" onClick={() => setOpen(true)} aria-label="menu">
+        <button className="rounded-lg p-2 hover:bg-bg lg:hidden dark:hover:bg-[#222]" onClick={() => setOpen(true)} aria-label={t('aria.menu')}>
           <Menu className="h-5 w-5" />
         </button>
 
@@ -93,6 +94,15 @@ export function Header() {
               {n.label}
             </NavLink>
           ))}
+          {user?.role === 'seller' && (
+            <Link
+              to="/seller/products/create"
+              className="ml-1 inline-flex items-center gap-1.5 rounded-lg border border-accent px-3 py-2 text-sm font-semibold text-accent transition hover:bg-accent hover:text-white"
+            >
+              <PackagePlus className="h-4 w-4" />
+              {t('seller.create')}
+            </Link>
+          )}
         </nav>
 
         <form onSubmit={onSearch} className="ml-auto hidden min-w-0 flex-1 md:block md:max-w-md lg:max-w-lg">
@@ -102,8 +112,18 @@ export function Header() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder={t('common.search')}
-              className="w-full rounded-xl border border-line bg-bg py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-ink dark:border-[#333] dark:bg-[#1a1a1a]"
+              className="w-full rounded-xl border border-line bg-bg py-2.5 pl-10 pr-9 text-sm outline-none transition focus:border-ink dark:border-[#333] dark:bg-[#1a1a1a]"
             />
+            {q && (
+              <button
+                type="button"
+                onClick={() => setQ('')}
+                aria-label={t('aria.clearSearch')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted transition hover:bg-line dark:hover:bg-[#333]"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </form>
 
@@ -128,13 +148,13 @@ export function Header() {
               </button>
             ))}
           </div>
-          <button type="button" onClick={toggleTheme} aria-label="theme" className="rounded-lg p-2 hover:bg-bg dark:hover:bg-[#222]">
+          <button type="button" onClick={toggleTheme} aria-label={t('aria.theme')} className="rounded-lg p-2 hover:bg-bg dark:hover:bg-[#222]">
             {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
           </button>
-          <Link to="/favorites" className="rounded-lg p-2 hover:bg-bg dark:hover:bg-[#222]" aria-label="favorites">
+          <Link to="/favorites" className="rounded-lg p-2 hover:bg-bg dark:hover:bg-[#222]" aria-label={t('aria.favorites')}>
             <Heart className="h-5 w-5" />
           </Link>
-          <Link to="/cart" className="relative rounded-lg p-2 hover:bg-bg dark:hover:bg-[#222]" aria-label="cart">
+          <Link to="/cart" className="relative rounded-lg p-2 hover:bg-bg dark:hover:bg-[#222]" aria-label={t('aria.cart')}>
             <ShoppingBag className="h-5 w-5" />
             {!!cart?.items_count && (
               <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-ink px-1 text-[10px] text-white dark:bg-white dark:text-ink">
@@ -143,14 +163,14 @@ export function Header() {
             )}
           </Link>
           {user && (
-            <Link to="/profile" className="relative rounded-lg p-2 hover:bg-bg dark:hover:bg-[#222]" aria-label="notifications">
+            <Link to="/profile" className="relative rounded-lg p-2 hover:bg-bg dark:hover:bg-[#222]" aria-label={t('aria.notifications')}>
               <Bell className="h-5 w-5" />
               {!!unread?.unread && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-sale" />}
             </Link>
           )}
           {user ? (
             <div className="group relative">
-              <Link to="/profile" className="flex items-center gap-1 rounded-lg p-2 hover:bg-bg dark:hover:bg-[#222]">
+              <Link to="/profile" className="flex items-center gap-1 rounded-lg p-2 hover:bg-bg dark:hover:bg-[#222]" aria-label={t('aria.account')}>
                 <User className="h-5 w-5" />
               </Link>
               <div className="invisible absolute right-0 top-full z-50 min-w-44 rounded-xl border border-line bg-white p-2 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100 dark:border-[#333] dark:bg-[#171717]">
@@ -160,7 +180,7 @@ export function Header() {
                 <Link to="/orders" className="block rounded-lg px-3 py-2 text-sm hover:bg-bg dark:hover:bg-[#222]">
                   {t('nav.orders')}
                 </Link>
-                {(user.role === 'seller' || user.role === 'admin') && (
+                {user.role === 'seller' && (
                   <Link to="/seller" className="block rounded-lg px-3 py-2 text-sm hover:bg-bg dark:hover:bg-[#222]">
                     {t('nav.seller')}
                   </Link>
@@ -192,7 +212,7 @@ export function Header() {
           <div className="h-full w-72 bg-white p-5 shadow-xl dark:bg-[#111]" onClick={(e) => e.stopPropagation()}>
             <div className="mb-5 flex items-center justify-between">
               <img src={logo} alt="S1NDZE" className="h-8" />
-              <button onClick={() => setOpen(false)} className="rounded-lg p-2">
+              <button onClick={() => setOpen(false)} className="rounded-lg p-2" aria-label={t('aria.closeMenu')}>
                 <X />
               </button>
             </div>
@@ -210,6 +230,16 @@ export function Header() {
                   {n.label}
                 </Link>
               ))}
+              {user?.role === 'seller' && (
+                <Link
+                  to="/seller/products/create"
+                  onClick={() => setOpen(false)}
+                  className="mt-1 inline-flex items-center gap-2 rounded-xl border border-accent px-3 py-3 text-base font-semibold text-accent"
+                >
+                  <PackagePlus className="h-4 w-4" />
+                  {t('seller.create')}
+                </Link>
+              )}
             </div>
             <div className="mt-6 flex gap-2">
               {langs.map((l) => (

@@ -16,6 +16,16 @@ class FavoriteListCreateView(generics.ListCreateAPIView):
             "product", "product__category"
         ).prefetch_related("product__images")
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Every product on this page is, by definition, one the user has
+        # favorited — precompute the id set once so the nested product
+        # serializer's is_favorited field doesn't run one query per row.
+        context["favorited_ids"] = set(
+            self.request.user.favorites.values_list("product_id", flat=True)
+        )
+        return context
+
     def create(self, request, *args, **kwargs):
         product_id = request.data.get("product_id")
         try:

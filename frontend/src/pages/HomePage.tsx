@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -8,38 +9,44 @@ import {
   RotateCcw,
   Sparkles,
   Shirt,
-  Handbag,
-  Baby,
   Footprints,
   Watch,
-  ShoppingBag,
-  type LucideIcon,
+  Percent,
 } from 'lucide-react'
 import { ProductCard, ProductSkeleton } from '@/components/ProductCard'
 import { categoriesApi, productsApi } from '@/services/shop'
 import { useRecentStore } from '@/store/recentStore'
 
-const CAT_ICON: Record<string, LucideIcon> = {
-  men: Shirt,
-  women: Handbag,
-  kids: Baby,
-  shoes: Footprints,
-  accessories: Watch,
-}
-
-const CAT_GRADIENT: Record<string, string> = {
-  men: 'from-sky-500/15 to-sky-500/0 text-sky-600 dark:text-sky-400',
-  women: 'from-rose-500/15 to-rose-500/0 text-rose-600 dark:text-rose-400',
-  kids: 'from-amber-500/15 to-amber-500/0 text-amber-600 dark:text-amber-400',
-  shoes: 'from-emerald-500/15 to-emerald-500/0 text-emerald-600 dark:text-emerald-400',
-  accessories: 'from-violet-500/15 to-violet-500/0 text-violet-600 dark:text-violet-400',
-}
+// Curated, non-gendered picks for the homepage strip — product type only,
+// never "Men / Women / Kids". Real categories are matched by slug against
+// the flat category list; "new" and "sale" are virtual shortcuts.
+const HOME_CATEGORIES = [
+  { slug: 't-shirts', icon: Shirt, gradient: 'from-sky-500/15 to-sky-500/0 text-sky-600 dark:text-sky-400' },
+  { slug: 'hoodies', icon: Shirt, gradient: 'from-violet-500/15 to-violet-500/0 text-violet-600 dark:text-violet-400' },
+  { slug: 'jackets', icon: Shirt, gradient: 'from-slate-500/15 to-slate-500/0 text-slate-600 dark:text-slate-300' },
+  { slug: 'pants', icon: Shirt, gradient: 'from-amber-500/15 to-amber-500/0 text-amber-600 dark:text-amber-400' },
+  { slug: 'shoes', icon: Footprints, gradient: 'from-emerald-500/15 to-emerald-500/0 text-emerald-600 dark:text-emerald-400' },
+  { slug: 'accessories', icon: Watch, gradient: 'from-rose-500/15 to-rose-500/0 text-rose-600 dark:text-rose-400' },
+] as const
 
 export function HomePage() {
   const { t } = useTranslation()
   const recent = useRecentStore((s) => s.items)
   const { data: home, isLoading } = useQuery({ queryKey: ['home'], queryFn: productsApi.home })
-  const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: categoriesApi.list })
+  const { data: categoriesFlat } = useQuery({ queryKey: ['categories-flat'], queryFn: categoriesApi.flat })
+
+  const homeCategories = useMemo(() => {
+    const bySlug = new Map((categoriesFlat || []).map((c) => [c.slug, c]))
+    const real = HOME_CATEGORIES.map((entry) => {
+      const cat = bySlug.get(entry.slug)
+      return cat ? { ...entry, name: cat.name, to: `/products?category=${cat.slug}` } : null
+    }).filter((c): c is NonNullable<typeof c> => c !== null)
+    return [
+      ...real,
+      { slug: '__new', icon: Sparkles, gradient: 'from-indigo-500/15 to-indigo-500/0 text-indigo-600 dark:text-indigo-400', name: t('nav.new'), to: '/products?new=true' },
+      { slug: '__sale', icon: Percent, gradient: 'from-red-500/15 to-red-500/0 text-red-600 dark:text-red-400', name: t('nav.sale'), to: '/products?sale=true' },
+    ]
+  }, [categoriesFlat, t])
 
   return (
     <div className="bg-bg pb-10 dark:bg-[#0d0d0d]">
@@ -73,23 +80,34 @@ export function HomePage() {
                 </Link>
               </div>
             </div>
-            <div className="hidden grid-cols-2 gap-3 md:grid">
-              {(home?.sale || []).slice(0, 4).map((p, i) => (
-                <Link
-                  key={p.id}
-                  to={`/products/${p.slug}`}
-                  className="anim-fade-up group overflow-hidden rounded-xl border border-white/10 bg-white/10 shadow-sm"
-                  style={{ animationDelay: `${i * 80}ms` }}
-                >
-                  {p.main_image && (
-                    <img
-                      src={p.main_image}
-                      alt={p.name}
-                      className="aspect-square w-full object-cover opacity-95 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
-                    />
-                  )}
-                </Link>
-              ))}
+            <div className="hidden grid-cols-2 gap-4 md:grid">
+              {(home?.sale || []).slice(0, 4).map((p, i) => {
+                const rotations = ['-3deg', '2deg', '-2deg', '3deg']
+                const durations = ['4.5s', '5.2s', '4.8s', '5.6s']
+                const offsets = ['', 'mt-5', 'mt-5', '']
+                return (
+                  <Link
+                    key={p.id}
+                    to={`/products/${p.slug}`}
+                    className={`anim-fade-up anim-float group block overflow-hidden rounded-xl border border-white/10 bg-white/10 shadow-lg shadow-black/20 ${offsets[i]}`}
+                    style={
+                      {
+                        animationDelay: `${i * 80}ms`,
+                        '--float-rot': rotations[i],
+                        '--float-duration': durations[i],
+                      } as React.CSSProperties
+                    }
+                  >
+                    {p.main_image && (
+                      <img
+                        src={p.main_image}
+                        alt={p.name}
+                        className="aspect-square w-full object-cover opacity-95 transition duration-500 group-hover:scale-110 group-hover:opacity-100"
+                      />
+                    )}
+                  </Link>
+                )
+              })}
             </div>
           </div>
         </div>
@@ -128,19 +146,18 @@ export function HomePage() {
             {t('sections.viewAll')} <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 sm:gap-3">
-          {(categories || []).map((c, i) => {
-            const Icon = CAT_ICON[c.slug] || ShoppingBag
-            const gradient = CAT_GRADIENT[c.slug] || 'from-ink/10 to-ink/0 text-ink dark:text-white'
+        <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-8">
+          {homeCategories.map((c, i) => {
+            const Icon = c.icon
             return (
               <Link
-                key={c.id}
-                to={`/products?category=${c.slug}`}
+                key={c.slug}
+                to={c.to}
                 className="card-lift anim-fade-up group flex flex-col items-center gap-2.5 rounded-2xl border border-line bg-white p-4 text-center shadow-sm dark:border-[#232323] dark:bg-[#171717]"
                 style={{ animationDelay: `${i * 50}ms` }}
               >
                 <span
-                  className={`flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br ${gradient} transition-transform duration-300 group-hover:scale-110`}
+                  className={`flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br ${c.gradient} transition-transform duration-300 group-hover:scale-110`}
                 >
                   <Icon className="h-6 w-6" strokeWidth={1.75} />
                 </span>

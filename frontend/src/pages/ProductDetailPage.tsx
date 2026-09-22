@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Heart, Minus, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { productsApi, reviewsApi, cartApi, favoritesApi, unwrapList } from '@/services/shop'
+import { getErrorMessage } from '@/services/api'
 import { formatPrice, cn } from '@/utils/format'
 import { ProductCard } from '@/components/ProductCard'
 import { useRecentStore } from '@/store/recentStore'
@@ -62,6 +63,13 @@ export function ProductDetailPage() {
 
   const selected = variants.find((v) => v.size === size && v.color === color)
 
+  const [favorited, setFavorited] = useState(false)
+  const [prevServerFavorited, setPrevServerFavorited] = useState(product?.is_favorited)
+  if (product?.is_favorited !== prevServerFavorited) {
+    setPrevServerFavorited(product?.is_favorited)
+    setFavorited(!!product?.is_favorited)
+  }
+
   useEffect(() => {
     if (sizes.length && !size) setSize(sizes[0])
   }, [sizes, size])
@@ -84,10 +92,30 @@ export function ProductDetailPage() {
     },
   })
 
-  const favMut = useMutation({
-    mutationFn: () => favoritesApi.add(product!.id),
-    onSuccess: () => toast.success('♥'),
+  const toggleFavMut = useMutation({
+    mutationFn: (wasFavorited: boolean) =>
+      wasFavorited ? favoritesApi.removeByProduct(product!.id) : favoritesApi.add(product!.id),
+    onSuccess: (_data, wasFavorited) => {
+      toast.success(wasFavorited ? t('favorites.removed') : t('favorites.added'), {
+        icon: <Heart className="h-4 w-4 fill-current" />,
+      })
+      qc.invalidateQueries({ queryKey: ['favorites'] })
+    },
+    onError: (err, wasFavorited) => {
+      setFavorited(wasFavorited)
+      toast.error(getErrorMessage(err, t('common.error')))
+    },
   })
+
+  const handleFavoriteClick = () => {
+    if (!user) {
+      toast.error(t('auth.loginToContinue'))
+      return
+    }
+    const wasFavorited = favorited
+    setFavorited(!wasFavorited)
+    toggleFavMut.mutate(wasFavorited)
+  }
 
   if (isLoading) return <div className="mx-auto max-w-7xl px-4 py-20">{t('common.loading')}</div>
   if (!product) return <div className="py-20 text-center">404</div>
@@ -198,8 +226,17 @@ export function ProductDetailPage() {
             >
               {t('product.buyNow')}
             </button>
-            <button type="button" onClick={() => favMut.mutate()} className="border p-3" aria-label="favorite">
-              <Heart className="h-5 w-5" />
+            <button
+              type="button"
+              onClick={handleFavoriteClick}
+              className={cn(
+                'border p-3 transition-colors',
+                favorited ? 'border-accent bg-accent/10 text-accent' : 'border-line dark:border-[#333]',
+              )}
+              aria-label={favorited ? t('aria.removeFavorite') : t('aria.addFavorite')}
+              aria-pressed={favorited}
+            >
+              <Heart key={String(favorited)} className={cn('h-5 w-5', favorited && 'anim-heart-pop fill-accent text-accent')} />
             </button>
           </div>
 
@@ -208,7 +245,7 @@ export function ProductDetailPage() {
               <span className="text-muted">{t('product.material')}:</span> {product.material || '—'}
             </p>
             <p>
-              <span className="text-muted">{t('product.details')}:</span> {product.category_name} · {product.gender}
+              <span className="text-muted">{t('product.details')}:</span> {product.category_name}
             </p>
           </div>
         </div>
@@ -247,9 +284,9 @@ export function ProductDetailPage() {
             <table className="mt-4 w-full text-left text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="py-2">Size</th>
-                  <th>Chest (cm)</th>
-                  <th>Waist (cm)</th>
+                  <th className="py-2">{t('product.size')}</th>
+                  <th>{t('product.sizeGuideChest')}</th>
+                  <th>{t('product.sizeGuideWaist')}</th>
                 </tr>
               </thead>
               <tbody>

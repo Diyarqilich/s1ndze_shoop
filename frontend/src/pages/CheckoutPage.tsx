@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -31,7 +31,17 @@ export function CheckoutPage() {
   const [discount, setDiscount] = useState(0)
   const [orderNumber, setOrderNumber] = useState<string | null>(null)
 
-  const { data: cart } = useQuery({ queryKey: ['cart'], queryFn: cartApi.get, enabled: !!user })
+  const { data: cart, isLoading: cartLoading } = useQuery({ queryKey: ['cart'], queryFn: cartApi.get, enabled: !!user })
+
+  // Redirecting is a side effect, not something to trigger mid-render —
+  // and it must wait for the cart to actually finish loading, otherwise a
+  // user who does have items gets briefly bounced back to /cart while the
+  // query is still in flight.
+  useEffect(() => {
+    if (user && !orderNumber && !cartLoading && !cart?.items?.length) {
+      navigate('/cart')
+    }
+  }, [user, orderNumber, cartLoading, cart, navigate])
   const {
     register,
     handleSubmit,
@@ -92,7 +102,7 @@ export function CheckoutPage() {
       <div className="mx-auto max-w-lg px-4 py-24 text-center">
         <p className="text-xs uppercase tracking-[0.3em] text-accent">{t('checkout.success')}</p>
         <h1 className="mt-4 font-display text-5xl">{orderNumber}</h1>
-        <p className="mt-4 text-muted">We&apos;ll notify you as your drop ships.</p>
+        <p className="mt-4 text-muted">{t('checkout.trackHint')}</p>
         <Link to={`/orders/${orderNumber}`} className="mt-8 inline-block bg-ink px-6 py-3 text-sm uppercase tracking-widest text-paper dark:bg-paper dark:text-ink">
           {t('orders.track')}
         </Link>
@@ -100,8 +110,10 @@ export function CheckoutPage() {
     )
   }
 
-  if (!cart?.items?.length) {
-    navigate('/cart')
+  if (!cart || cartLoading) {
+    return <div className="mx-auto max-w-7xl px-4 py-20 text-center">{t('common.loading')}</div>
+  }
+  if (!cart.items.length) {
     return null
   }
 

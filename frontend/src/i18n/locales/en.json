@@ -53,7 +53,9 @@
     "quickView": "Quick view",
     "noReviews": "No reviews yet",
     "close": "Close",
-    "alreadySaved": "Already in favorites"
+    "alreadySaved": "Already in favorites",
+    "sizeGuideChest": "Chest (cm)",
+    "sizeGuideWaist": "Waist (cm)"
   },
   "cart": {
     "title": "Cart",
@@ -86,7 +88,8 @@
     "phone": "Phone",
     "city": "City",
     "address": "Address",
-    "comment": "Comment"
+    "comment": "Comment",
+    "trackHint": "We'll keep you posted on your delivery status."
   },
   "auth": {
     "loginTitle": "Sign in",
@@ -117,7 +120,8 @@
     "errUsernameSpaces": "Username cannot contain spaces",
     "errEmailInvalid": "Enter a valid email",
     "errPasswordMin": "At least 8 characters",
-    "errPasswordMismatch": "Passwords do not match"
+    "errPasswordMismatch": "Passwords do not match",
+    "loginToContinue": "Log in to continue"
   },
   "orders": {
     "title": "My orders",
@@ -128,7 +132,9 @@
   },
   "favorites": {
     "title": "Favorites",
-    "empty": "Favorites list is empty"
+    "empty": "Favorites list is empty",
+    "added": "Added to favorites",
+    "removed": "Removed from favorites"
   },
   "profile": {
     "title": "Profile",
@@ -136,7 +142,8 @@
     "notifications": "Notifications",
     "markAll": "Mark all as read",
     "noNotifications": "No notifications",
-    "saved": "Saved"
+    "saved": "Saved",
+    "bioPlaceholder": "About you"
   },
   "seller": {
     "dashboard": "Seller dashboard",
@@ -161,7 +168,20 @@
     "formErrors": "Please fill in all required fields before saving.",
     "noCategories": "No categories exist yet, so a product cannot be assigned one. Ask an admin to add categories first.",
     "selectCategory": "Please select a category",
-    "oldPrice": "Old price (optional)"
+    "oldPrice": "Old price (optional)",
+    "variants": "Variants",
+    "addVariant": "Add variant",
+    "minOneVariant": "At least one variant is required",
+    "images": "Photos",
+    "addImage": "Add photo",
+    "mainImage": "Main",
+    "setMain": "Set as main",
+    "noImages": "No photos yet",
+    "imageRemoved": "Photo removed",
+    "newBadge": "New",
+    "noProducts": "You haven't added any products yet",
+    "searchPlaceholder": "Search products…",
+    "emptyOrdersHint": "Orders will appear here"
   },
   "common": {
     "search": "Search products…",
@@ -194,7 +214,9 @@
     "priceRange": "Price",
     "sale": "Sale",
     "new": "New",
-    "applyFilters": "Show results"
+    "applyFilters": "Show results",
+    "min": "Min",
+    "max": "Max"
   },
   "footer": {
     "about": "About us",
@@ -204,7 +226,10 @@
     "returns": "Returns",
     "tagline": "Online fashion store. Easy shopping, fast delivery.",
     "info": "Information",
-    "payments": "Payment methods"
+    "payments": "Payment methods",
+    "sellers": "Sellers",
+    "becomeSeller": "Become a seller",
+    "rights": "All rights reserved"
   },
   "status": {
     "pending": "Placed",
@@ -235,5 +260,20 @@
     "userDeleted": "User deleted",
     "confirmDeleteUser": "Delete this user? This cannot be undone.",
     "confirmDeleteProduct": "Delete this product? This cannot be undone."
+  },
+  "aria": {
+    "menu": "Open menu",
+    "closeMenu": "Close menu",
+    "theme": "Toggle theme",
+    "favorites": "Favorites",
+    "cart": "Cart",
+    "notifications": "Notifications",
+    "account": "Account",
+    "addFavorite": "Add to favorites",
+    "removeFavorite": "Remove from favorites",
+    "language": "Choose language",
+    "removeImage": "Remove photo",
+    "removeVariant": "Remove variant",
+    "clearSearch": "Clear search"
   }
 }

@@ -59,6 +59,7 @@ export interface Product {
   category: number
   category_name: string
   total_stock: number
+  is_favorited: boolean
   created_at: string
   description?: string
   material?: string

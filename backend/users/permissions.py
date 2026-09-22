@@ -23,6 +23,19 @@ class IsAdminRole(BasePermission):
         return bool(u and u.is_authenticated and (u.role == "admin" or u.is_superuser))
 
 
+class CanCreateProduct(BasePermission):
+    """Only an actual seller account may create a new product listing.
+
+    Admin accounts can moderate the catalog (view/delete) through the same
+    seller viewset, but they must never be able to add products themselves —
+    product creation is a seller-only capability.
+    """
+
+    def has_permission(self, request, view):
+        u = request.user
+        return bool(u and u.is_authenticated and u.role == "seller")
+
+
 class IsSellerOrReadOnly(BasePermission):
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:

@@ -8,7 +8,6 @@ import { categoriesApi, productsApi } from '@/services/shop'
 import { cn } from '@/utils/format'
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-const GENDERS = ['men', 'women', 'unisex', 'kids'] as const
 
 export function ProductsPage() {
   const { t } = useTranslation()
@@ -33,7 +32,14 @@ export function ProductsPage() {
     queryKey: ['products', query],
     queryFn: () => productsApi.list(query),
   })
-  const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: categoriesApi.list })
+  const { data: categoriesFlat } = useQuery({ queryKey: ['categories-flat'], queryFn: categoriesApi.flat })
+  // Department names (Men/Women/Kids) read as a gender picker by another
+  // name, so the catalog never surfaces them as a filter — only the
+  // product-type categories (T-Shirts, Hoodies, Shoes, Accessories, ...).
+  const categories = useMemo(
+    () => (categoriesFlat || []).filter((c) => !['men', 'women', 'kids'].includes(c.slug)),
+    [categoriesFlat],
+  )
 
   const set = (key: string, value: string) => {
     const next = new URLSearchParams(params)
@@ -50,7 +56,6 @@ export function ProductsPage() {
       const cat = (categories || []).find((c) => c.slug === categorySlug)
       chips.push({ key: 'category', label: cat?.name || categorySlug })
     }
-    if (params.get('gender')) chips.push({ key: 'gender', label: t(`common.${params.get('gender')}`) })
     if (params.get('size')) chips.push({ key: 'size', label: `${t('common.size')}: ${params.get('size')}` })
     if (params.get('min_price') || params.get('max_price')) {
       chips.push({
@@ -102,29 +107,6 @@ export function ProductsPage() {
         </div>
       </FilterSection>
 
-      <FilterSection title={t('common.gender')}>
-        <div className="flex flex-wrap gap-2">
-          {GENDERS.map((g) => {
-            const active = params.get('gender') === g
-            return (
-              <button
-                key={g}
-                type="button"
-                onClick={() => set('gender', active ? '' : g)}
-                className={cn(
-                  'rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all',
-                  active
-                    ? 'border-ink bg-ink text-white dark:border-white dark:bg-white dark:text-ink'
-                    : 'border-line hover:border-ink/40 dark:border-[#333] dark:hover:border-white/40',
-                )}
-              >
-                {t(`common.${g}`)}
-              </button>
-            )
-          })}
-        </div>
-      </FilterSection>
-
       <FilterSection title={t('common.size')}>
         <div className="flex flex-wrap gap-2">
           {SIZES.map((s) => {
@@ -151,7 +133,7 @@ export function ProductsPage() {
       <FilterSection title={t('common.priceRange')}>
         <div className="flex items-center gap-2">
           <input
-            placeholder="Min"
+            placeholder={t('common.min')}
             inputMode="numeric"
             defaultValue={params.get('min_price') || ''}
             onBlur={(e) => set('min_price', e.target.value)}
@@ -159,7 +141,7 @@ export function ProductsPage() {
           />
           <span className="text-muted">—</span>
           <input
-            placeholder="Max"
+            placeholder={t('common.max')}
             inputMode="numeric"
             defaultValue={params.get('max_price') || ''}
             onBlur={(e) => set('max_price', e.target.value)}

@@ -26,6 +26,14 @@ class AuthAndPermissionsTests(TestCase):
         self.buyer = User.objects.create_user(
             username="buyer1", email="b1@test.com", password="pass12345", role="buyer"
         )
+        self.admin = User.objects.create_user(
+            username="admin1",
+            email="a1@test.com",
+            password="pass12345",
+            role="admin",
+            is_staff=True,
+            is_superuser=True,
+        )
         self.product = Product.objects.create(
             seller=self.seller,
             category=self.cat,
@@ -83,6 +91,101 @@ class AuthAndPermissionsTests(TestCase):
         )
         self.assertEqual(r.status_code, 403)
 
+    def test_admin_cannot_create_product(self):
+        self.client.force_authenticate(self.admin)
+        r = self.client.post(
+            "/api/seller/products/",
+            {
+                "category": self.cat.id,
+                "name": "Admin product",
+                "description": "x",
+                "price": "1000",
+            },
+            format="json",
+        )
+        self.assertEqual(r.status_code, 403)
+
+    def test_admin_can_view_and_delete_but_not_create(self):
+        self.client.force_authenticate(self.admin)
+        # Moderation: admin sees the whole catalog, not just their own (they
+        # have none) products.
+        r = self.client.get("/api/seller/products/")
+        self.assertEqual(r.status_code, 200)
+        ids = [p["id"] for p in r.data] if isinstance(r.data, list) else [
+            p["id"] for p in r.data["results"]
+        ]
+        self.assertIn(self.product.id, ids)
+        # Moderation delete stays available to admins.
+        r = self.client.delete(f"/api/seller/products/{self.product.id}/")
+        self.assertEqual(r.status_code, 204)
+        self.assertFalse(Product.objects.filter(pk=self.product.id).exists())
+
+    def test_seller_can_create_product(self):
+        self.client.force_authenticate(self.seller)
+        r = self.client.post(
+            "/api/seller/products/",
+            {
+                "category": self.cat.id,
+                "name": "New Drop",
+                "description": "x",
+                "price": "150000",
+                "variants": [{"size": "M", "color": "Black", "stock": 5}],
+            },
+            format="json",
+        )
+        self.assertEqual(r.status_code, 201, r.data)
+
+    def test_sellers_new_product_appears_first_in_their_own_list(self):
+        # A product list left unordered after annotate() can paginate
+        # unpredictably — a seller's freshly created listing must show up
+        # on page 1 of their own dashboard, not wherever the DB felt like
+        # putting it.
+        self.client.force_authenticate(self.seller)
+        r = self.client.post(
+            "/api/seller/products/",
+            {
+                "category": self.cat.id,
+                "name": "Brand New Drop",
+                "description": "x",
+                "price": "150000",
+                "variants": [{"size": "M", "color": "Black", "stock": 5}],
+            },
+            format="json",
+        )
+        self.assertEqual(r.status_code, 201, r.data)
+        new_id = r.data["id"]
+        r = self.client.get("/api/seller/products/")
+        self.assertEqual(r.status_code, 200)
+        results = r.data if isinstance(r.data, list) else r.data["results"]
+        self.assertEqual(results[0]["id"], new_id)
+
+    def test_seller_can_delete_own_product_image(self):
+        from products.models import ProductImage
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        image = ProductImage.objects.create(
+            product=self.product,
+            image=SimpleUploadedFile("test.jpg", b"filecontent", content_type="image/jpeg"),
+            is_main=True,
+        )
+        self.client.force_authenticate(self.seller)
+        r = self.client.delete(f"/api/seller/products/{self.product.id}/images/{image.id}/")
+        self.assertEqual(r.status_code, 204)
+        self.assertFalse(ProductImage.objects.filter(pk=image.id).exists())
+
+    def test_seller2_cannot_delete_other_sellers_image(self):
+        from products.models import ProductImage
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        image = ProductImage.objects.create(
+            product=self.product,
+            image=SimpleUploadedFile("test.jpg", b"filecontent", content_type="image/jpeg"),
+            is_main=True,
+        )
+        self.client.force_authenticate(self.seller2)
+        r = self.client.delete(f"/api/seller/products/{self.product.id}/images/{image.id}/")
+        self.assertEqual(r.status_code, 403)
+
     def test_cart_and_checkout(self):
         self.client.force_authenticate(self.buyer)
         r = self.client.post(
@@ -118,6 +221,56 @@ class AuthAndPermissionsTests(TestCase):
         self.variant.refresh_from_db()
         self.assertEqual(self.variant.stock, 3)
 
+    def test_order_number_is_short_and_sequential(self):
+        import re
+
+        self.client.force_authenticate(self.buyer)
+        self.client.post(
+            "/api/cart/items/",
+            {"variant_id": self.variant.id, "quantity": 1},
+            format="json",
+        )
+        r = self.client.post(
+            "/api/orders/checkout/",
+            {
+                "first_name": "A",
+                "last_name": "B",
+                "phone": "+998901112233",
+                "city": "Tashkent",
+                "address": "Street 1",
+                "payment_method": "cash",
+            },
+            format="json",
+        )
+        self.assertEqual(r.status_code, 201, r.data)
+        self.assertRegex(r.data["order_number"], r"^S1N-\d{6}$")
+
+    def test_favorite_toggle_and_is_favorited_flag(self):
+        self.client.force_authenticate(self.buyer)
+
+        r = self.client.get(f"/api/products/{self.product.slug}/")
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(r.data["is_favorited"])
+
+        r = self.client.post("/api/favorites/", {"product_id": self.product.id}, format="json")
+        self.assertEqual(r.status_code, 201)
+        fav_id = r.data["id"]
+
+        r = self.client.get(f"/api/products/{self.product.slug}/")
+        self.assertTrue(r.data["is_favorited"])
+
+        r = self.client.delete(f"/api/favorites/{fav_id}/")
+        self.assertEqual(r.status_code, 204)
+
+        r = self.client.get(f"/api/products/{self.product.slug}/")
+        self.assertFalse(r.data["is_favorited"])
+
+    def test_favorite_remove_by_product_id(self):
+        self.client.force_authenticate(self.buyer)
+        self.client.post("/api/favorites/", {"product_id": self.product.id}, format="json")
+        r = self.client.delete(f"/api/favorites/0/?product_id={self.product.id}")
+        self.assertEqual(r.status_code, 204)
+
     def test_cannot_review_without_purchase(self):
         self.client.force_authenticate(self.buyer)
         r = self.client.post(
@@ -131,3 +284,29 @@ class AuthAndPermissionsTests(TestCase):
             format="json",
         )
         self.assertEqual(r.status_code, 400)
+
+
+class SeedShopDemoAccountsTests(TestCase):
+    """The README promises admin/s1ndze/buyer demo logins after `seed_shop`
+    — make sure the command actually leaves them able to log in. (It once
+    didn't: has_usable_password() can read a freshly-created, still-blank
+    password field as "usable" and skip setting a real one.)
+    """
+
+    def test_seeded_accounts_can_log_in(self):
+        from django.core.management import call_command
+
+        call_command("seed_shop", verbosity=0)
+        client = APIClient()
+        for username, password in (
+            ("admin", "admin12345"),
+            ("s1ndze", "seller12345"),
+            ("buyer", "buyer12345"),
+        ):
+            r = client.post(
+                "/api/auth/login/",
+                {"username": username, "password": password},
+                format="json",
+            )
+            self.assertEqual(r.status_code, 200, f"{username} could not log in: {r.data}")
+            self.assertIn("access", r.data)

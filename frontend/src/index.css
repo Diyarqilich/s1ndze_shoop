@@ -8,12 +8,29 @@
   --color-bg: #f5f5f5;
   --color-muted: #717171;
   --color-line: #e8e8e8;
-  --color-accent: #111111;
-  --color-accent-soft: #333333;
+  /* Brand magenta (S1NDZE graffiti logo) used for links/active states. */
+  --color-accent: #e91e8c;
+  --color-accent-soft: #c81877;
   --color-sale: #e53935;
   --color-ok: #2e7d32;
   --font-display: "Manrope", "Segoe UI", sans-serif;
   --font-body: "Manrope", "Segoe UI", sans-serif;
+}
+
+/*
+ * --color-accent used to be #111 (near-black) with no dark-mode override,
+ * so anything using text-accent/bg-accent/border-accent sat on the
+ * near-black dark background and effectively vanished. Redefining the
+ * custom property here (rather than only inside @theme) lets every
+ * Tailwind utility generated from it — including ones this file doesn't
+ * touch directly — pick up a legible, on-brand value in dark mode.
+ * `:root.dark` (not just `.dark`) so this reliably outranks the `:root`
+ * rule @theme compiles to, regardless of each rule's position in the
+ * generated stylesheet.
+ */
+:root.dark {
+  --color-accent: #ff4fac;
+  --color-accent-soft: #ff7cc4;
 }
 
 @layer base {
@@ -74,6 +91,16 @@
   0% { background-position: -400px 0; }
   100% { background-position: 400px 0; }
 }
+@keyframes floatY {
+  0%, 100% { transform: translateY(0) rotate(var(--float-rot, 0deg)); }
+  50% { transform: translateY(-10px) rotate(var(--float-rot, 0deg)); }
+}
+@keyframes heartPop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.35); }
+  60% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
 
 .anim-fade-up {
   animation: fadeUp 0.45s ease both;
@@ -113,6 +140,43 @@
 .dark .skeleton-shimmer {
   background: #1f1f1f linear-gradient(to right, #1f1f1f 8%, #2a2a2a 18%, #1f1f1f 33%) no-repeat;
   background-size: 800px 100%;
+}
+
+/* Gentle up/down drift for hero product cards; pair with an inline
+   --float-rot custom property per card for a slight, varied tilt. */
+.anim-float {
+  animation: floatY var(--float-duration, 4.5s) ease-in-out infinite;
+}
+.anim-heart-pop {
+  animation: heartPop 0.45s cubic-bezier(0.17, 0.89, 0.32, 1.49) both;
+}
+
+/* Respect the OS-level "reduce motion" preference: keep entrances (so
+   content isn't invisible waiting on a transform) but drop movement,
+   looping and long durations everywhere else. */
+@media (prefers-reduced-motion: reduce) {
+  .anim-fade-up,
+  .anim-fade-in,
+  .anim-slide-in,
+  .anim-scale-in,
+  .stagger-item {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+  }
+  .anim-float {
+    animation: none !important;
+  }
+  .anim-heart-pop {
+    animation-duration: 0.01ms !important;
+  }
+  .card-lift,
+  .card-lift:hover {
+    transition: none !important;
+    transform: none !important;
+  }
+  html {
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Nicer focus ring across the site, keyboard users only */

@@ -58,7 +58,13 @@ class Command(BaseCommand):
                 "last_name": "Official",
             },
         )
-        if not seller.has_usable_password():
+        # has_usable_password() treats a freshly-created row's blank
+        # password field as "usable" on some Django/hasher combinations, so
+        # the demo accounts could silently end up with no working password.
+        # Checking against the actual intended password is reliable
+        # regardless of how the row got into that state, and is idempotent
+        # to re-run.
+        if not seller.check_password("seller12345"):
             seller.set_password("seller12345")
             seller.save()
 
@@ -71,7 +77,7 @@ class Command(BaseCommand):
                 "last_name": "Buyer",
             },
         )
-        if not buyer.has_usable_password():
+        if not buyer.check_password("buyer12345"):
             buyer.set_password("buyer12345")
             buyer.save()
 
@@ -84,7 +90,7 @@ class Command(BaseCommand):
                 "is_superuser": True,
             },
         )
-        if created or not admin.has_usable_password():
+        if created or not admin.check_password("admin12345"):
             admin.set_password("admin12345")
             admin.is_staff = True
             admin.is_superuser = True

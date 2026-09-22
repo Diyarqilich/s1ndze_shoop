@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
 import { Eye, Heart, Star } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import type { Product } from '@/types'
-import { formatPrice } from '@/utils/format'
+import { formatPrice, cn } from '@/utils/format'
 import { useAuthStore } from '@/store/authStore'
 import { favoritesApi } from '@/services/shop'
+import { getErrorMessage } from '@/services/api'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 interface Props {
@@ -16,15 +18,42 @@ export function ProductCard({ product }: Props) {
   const { t } = useTranslation()
   const user = useAuthStore((s) => s.user)
   const qc = useQueryClient()
+  const [favorited, setFavorited] = useState(!!product.is_favorited)
+  // Products refetch often (rails, catalog pages, favorites list) and this
+  // card doesn't always remount when that happens. Adjust local state
+  // during render (React's recommended pattern) rather than in an effect,
+  // so it never lags a frame behind the server's latest value.
+  const [prevServerFavorited, setPrevServerFavorited] = useState(product.is_favorited)
+  if (product.is_favorited !== prevServerFavorited) {
+    setPrevServerFavorited(product.is_favorited)
+    setFavorited(!!product.is_favorited)
+  }
 
-  const fav = useMutation({
-    mutationFn: () => favoritesApi.add(product.id),
-    onSuccess: () => {
-      toast.success('♥')
+  const toggleFav = useMutation({
+    mutationFn: (wasFavorited: boolean) =>
+      wasFavorited ? favoritesApi.removeByProduct(product.id) : favoritesApi.add(product.id),
+    onSuccess: (_data, wasFavorited) => {
+      toast.success(wasFavorited ? t('favorites.removed') : t('favorites.added'), {
+        icon: <Heart className="h-4 w-4 fill-current" />,
+      })
       qc.invalidateQueries({ queryKey: ['favorites'] })
     },
-    onError: () => toast.error(user ? t('product.alreadySaved') : t('nav.login')),
+    onError: (err, wasFavorited) => {
+      setFavorited(wasFavorited)
+      toast.error(getErrorMessage(err, t('common.error')))
+    },
   })
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!user) {
+      toast.error(t('auth.loginToContinue'))
+      return
+    }
+    const wasFavorited = favorited
+    setFavorited(!wasFavorited)
+    toggleFav.mutate(wasFavorited)
+  }
 
   return (
     <article className="card-lift group relative overflow-hidden rounded-2xl border border-line/60 bg-white shadow-sm dark:border-[#242424] dark:bg-[#171717]">
@@ -53,21 +82,25 @@ export function ProductCard({ product }: Props) {
             )}
             {product.is_new && (
               <span className="rounded-md bg-ink px-1.5 py-0.5 text-[11px] font-semibold text-white shadow-sm dark:bg-white dark:text-ink">
-                NEW
+                {t('seller.newBadge')}
               </span>
             )}
           </div>
 
           <button
             type="button"
-            onClick={(e) => {
-              e.preventDefault()
-              fav.mutate()
-            }}
+            onClick={handleFavoriteClick}
             className="absolute right-2 top-2 rounded-full bg-white/95 p-2 opacity-100 shadow-sm transition-all duration-200 hover:scale-110 hover:bg-white sm:opacity-0 sm:group-hover:opacity-100 dark:bg-[#111]/95 dark:hover:bg-[#111]"
-            aria-label={t('product.favorite')}
+            aria-label={favorited ? t('aria.removeFavorite') : t('aria.addFavorite')}
+            aria-pressed={favorited}
           >
-            <Heart className="h-4 w-4 transition-colors group-hover:text-sale" />
+            <Heart
+              key={String(favorited)}
+              className={cn(
+                'h-4 w-4 transition-colors',
+                favorited ? 'anim-heart-pop fill-accent text-accent' : 'text-ink/70 group-hover:text-accent dark:text-white/70',
+              )}
+            />
           </button>
 
           <div className="absolute inset-x-2 bottom-2 translate-y-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:flex hidden">
@@ -83,7 +116,7 @@ export function ProductCard({ product }: Props) {
         <p className="text-[11px] uppercase tracking-wide text-muted">{product.brand}</p>
         <Link
           to={`/products/${product.slug}`}
-          className="line-clamp-2 text-sm font-medium leading-snug transition-colors hover:text-sale"
+          className="line-clamp-2 text-sm font-medium leading-snug transition-colors hover:text-accent"
         >
           {product.name}
         </Link>

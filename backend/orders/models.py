@@ -51,9 +51,16 @@ class Order(models.Model):
         ordering = ["-created_at"]
 
     def save(self, *args, **kwargs):
+        is_new = self._state.adding
         if not self.order_number:
-            self.order_number = f"S1N-{uuid.uuid4().hex[:8].upper()}"
+            # Placeholder to satisfy the unique/non-null constraint until the
+            # row has a primary key — replaced below with a short, readable,
+            # sequential number instead of a raw UUID fragment.
+            self.order_number = f"S1N-TMP-{uuid.uuid4().hex}"
         super().save(*args, **kwargs)
+        if is_new and self.order_number.startswith("S1N-TMP-"):
+            self.order_number = f"S1N-{self.pk:06d}"
+            super().save(update_fields=["order_number"])
 
     def __str__(self):
         return self.order_number

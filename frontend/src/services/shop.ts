@@ -19,6 +19,7 @@ export const productsApi = {
 
 export const categoriesApi = {
   list: () => api.get<Category[]>('/categories/').then((r) => r.data),
+  flat: () => api.get<Category[]>('/categories/flat/').then((r) => r.data),
 }
 
 export const cartApi = {
@@ -35,6 +36,10 @@ export const favoritesApi = {
   list: () => api.get<Paginated<{ id: number; product: Product }> | { id: number; product: Product }[]>('/favorites/').then((r) => r.data),
   add: (product_id: number) => api.post('/favorites/', { product_id }).then((r) => r.data),
   remove: (id: number) => api.delete(`/favorites/${id}/`),
+  // The backend honors ?product_id= on this endpoint regardless of the path
+  // pk, so a product card can remove a favorite without first looking up
+  // the favorite row's own id.
+  removeByProduct: (product_id: number) => api.delete(`/favorites/0/?product_id=${product_id}`),
 }
 
 export const ordersApi = {
@@ -81,6 +86,8 @@ export const sellerApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
+  deleteImage: (productId: number, imageId: number) =>
+    api.delete(`/seller/products/${productId}/images/${imageId}/`),
 }
 
 export interface AdminStats {

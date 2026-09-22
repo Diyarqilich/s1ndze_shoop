@@ -74,7 +74,7 @@ export function ProfilePage() {
             <input {...register('last_name')} placeholder={t('checkout.lastName')} className="border border-line bg-transparent px-3 py-3 dark:border-[#333]" />
           </div>
           <input {...register('phone_number')} placeholder={t('checkout.phone')} className="w-full border border-line bg-transparent px-3 py-3 dark:border-[#333]" />
-          <textarea {...register('bio')} placeholder="Bio" rows={4} className="w-full border border-line bg-transparent px-3 py-3 dark:border-[#333]" />
+          <textarea {...register('bio')} placeholder={t('profile.bioPlaceholder')} rows={4} className="w-full border border-line bg-transparent px-3 py-3 dark:border-[#333]" />
           <button type="submit" className="bg-ink px-6 py-3 text-sm uppercase tracking-widest text-paper dark:bg-paper dark:text-ink">
             {t('profile.save')}
           </button>

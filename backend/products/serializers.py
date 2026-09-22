@@ -28,6 +28,7 @@ class ProductListSerializer(serializers.ModelSerializer):
     discount_percent = serializers.SerializerMethodField()
     category_name = serializers.CharField(source="category.name", read_only=True)
     total_stock = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -51,6 +52,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             "category",
             "category_name",
             "total_stock",
+            "is_favorited",
             "created_at",
         )
 
@@ -80,6 +82,15 @@ class ProductListSerializer(serializers.ModelSerializer):
         if hasattr(obj, "total_stock_sum") and obj.total_stock_sum is not None:
             return int(obj.total_stock_sum)
         return obj.total_stock
+
+    def get_is_favorited(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        favorited_ids = self.context.get("favorited_ids")
+        if favorited_ids is not None:
+            return obj.id in favorited_ids
+        return obj.favorited_by.filter(user=request.user).exists()
 
 
 class ProductDetailSerializer(ProductListSerializer):

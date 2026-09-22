@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Store } from 'lucide-react'
 import logo from '@/assets/s1ndze.jpg'
 
 export function Footer() {
   const { t } = useTranslation()
   return (
     <footer className="mt-8 border-t border-line bg-white dark:border-[#2a2a2a] dark:bg-[#111]">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-4 lg:px-6">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-5 lg:px-6">
         <div className="md:col-span-2">
           <div className="flex items-center gap-2">
             <img src={logo} alt="S1NDZE" className="h-9 object-contain" />
@@ -17,9 +18,21 @@ export function Footer() {
         <div>
           <h4 className="font-semibold">{t('nav.shop')}</h4>
           <ul className="mt-3 space-y-2 text-sm text-muted">
-            <li><Link to="/products" className="hover:text-ink dark:hover:text-white">{t('nav.shop')}</Link></li>
-            <li><Link to="/products?new=true" className="hover:text-ink dark:hover:text-white">{t('nav.new')}</Link></li>
-            <li><Link to="/products?sale=true" className="hover:text-ink dark:hover:text-white">{t('nav.sale')}</Link></li>
+            <li><Link to="/products" className="hover:text-accent">{t('nav.shop')}</Link></li>
+            <li><Link to="/products?new=true" className="hover:text-accent">{t('nav.new')}</Link></li>
+            <li><Link to="/products?sale=true" className="hover:text-accent">{t('nav.sale')}</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-semibold">{t('footer.sellers')}</h4>
+          <ul className="mt-3 space-y-2 text-sm text-muted">
+            <li>
+              <Link to="/register" className="inline-flex items-center gap-1.5 hover:text-accent">
+                <Store className="h-3.5 w-3.5" />
+                {t('footer.becomeSeller')}
+              </Link>
+            </li>
+            <li><Link to="/login" className="hover:text-accent">{t('nav.login')}</Link></li>
           </ul>
         </div>
         <div>
@@ -40,7 +53,7 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-line py-4 text-center text-xs text-muted dark:border-[#2a2a2a]">
-        © {new Date().getFullYear()} S1NDZE SHOP
+        © {new Date().getFullYear()} S1NDZE SHOP — {t('footer.rights')}
       </div>
     </footer>
   )

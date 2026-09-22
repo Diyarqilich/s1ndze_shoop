@@ -14,20 +14,30 @@ Brand accent comes from the S1NDZE graffiti logo (black / white / magenta `#E91E
 
 ## Features
 
-- Auth: register / login / refresh / logout / profile (JWT + blacklist)
-- Roles: buyer, seller, admin (enforced on backend)
-- Catalog: categories, variants (size/color/stock), search & filters
-- Cart & favorites
+- Auth: register / login (username or email) / refresh / logout / profile (JWT + blacklist)
+- Roles: buyer, seller, admin — enforced on the backend, not just hidden in the UI
+- Catalog: categories, variants (size/color/stock), search & filters, non-gendered category browsing
+- Cart & favorites (favorites are a true toggle — add/remove reflects instantly and survives a reload)
 - Checkout with backend price/stock validation
 - Payments abstraction: cash, Click, Payme, Uzcard, Humo (COD ready; gateways pluggable)
-- Orders + visual status tracking
+- Orders + visual status tracking, short readable order numbers (`S1N-000001`)
 - Reviews only after delivered purchase
 - Coupons (`S1NDZE10`)
 - Notifications bell
-- Seller dashboard (stats, CRUD products, orders)
-- UZ / RU / EN + light/dark theme
+- Seller dashboard: stats, product CRUD with multi-variant and multi-image management, orders
+- Admin panel: manage users and sellers (view/delete); admins cannot create products — that stays seller-only, enforced on the backend
+- UZ / RU / EN + light/dark theme, with a brand-consistent accent in both modes
 - Recently viewed (localStorage)
 - API docs at `/api/docs/`
+
+### Roles at a glance
+
+| Capability                     | Buyer | Seller | Admin |
+|---------------------------------|:-----:|:------:|:-----:|
+| Browse, search, cart, checkout  | ✓     | ✓      | –     |
+| Create / edit own products      | –     | ✓      | –     |
+| View & moderate (delete) any product | –     | –      | ✓     |
+| Manage users & sellers (view/delete) | –     | –      | ✓     |
 
 ### Own extras
 
@@ -122,3 +132,4 @@ s1ndze_shoop/
 - Prices and stock are always calculated on the backend — never trust the client.
 - Celery runs in eager mode locally so the app works without Redis.
 - Media files are stored under `backend/media/`.
+- Order numbers (`S1N-000001`) are short and sequential rather than a raw UUID fragment; existing orders are renumbered by a data migration.

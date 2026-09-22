@@ -11,7 +11,9 @@ export function SellerRoute() {
   const user = useAuthStore((s) => s.user)
   const access = useAuthStore((s) => s.access)
   if (!access) return <Navigate to="/login" replace />
-  if (user && user.role !== 'seller' && user.role !== 'admin') {
+  // Seller-only: an admin manages the catalog through /admin/*, not the
+  // seller dashboard, so they're routed away just like a buyer would be.
+  if (user && user.role !== 'seller') {
     return <Navigate to="/" replace />
   }
   return <Outlet />

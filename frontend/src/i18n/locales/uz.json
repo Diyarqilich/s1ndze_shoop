@@ -53,7 +53,9 @@
     "quickView": "Tezkor ko'rish",
     "noReviews": "Hali sharhlar yo'q",
     "close": "Yopish",
-    "alreadySaved": "Allaqachon sevimlilarda"
+    "alreadySaved": "Allaqachon sevimlilarda",
+    "sizeGuideChest": "Ko'krak (sm)",
+    "sizeGuideWaist": "Bel (sm)"
   },
   "cart": {
     "title": "Savat",
@@ -86,7 +88,8 @@
     "phone": "Telefon",
     "city": "Shahar",
     "address": "Manzil",
-    "comment": "Izoh"
+    "comment": "Izoh",
+    "trackHint": "Yetkazib berish holati haqida sizga xabar beramiz."
   },
   "auth": {
     "loginTitle": "Kirish",
@@ -117,7 +120,8 @@
     "errUsernameSpaces": "Login bo'sh joy o'z ichiga olmasligi kerak",
     "errEmailInvalid": "To'g'ri email kiriting",
     "errPasswordMin": "Kamida 8 ta belgi",
-    "errPasswordMismatch": "Parollar mos kelmadi"
+    "errPasswordMismatch": "Parollar mos kelmadi",
+    "loginToContinue": "Davom etish uchun tizimga kiring"
   },
   "orders": {
     "title": "Buyurtmalarim",
@@ -128,7 +132,9 @@
   },
   "favorites": {
     "title": "Sevimlilar",
-    "empty": "Sevimlilar ro'yxati bo'sh"
+    "empty": "Sevimlilar ro'yxati bo'sh",
+    "added": "Mahsulot sevimlilarga qo'shildi",
+    "removed": "Mahsulot sevimlilardan olib tashlandi"
   },
   "profile": {
     "title": "Profil",
@@ -136,7 +142,8 @@
     "notifications": "Bildirishnomalar",
     "markAll": "Barchasini o'qilgan qilish",
     "noNotifications": "Bildirishnomalar yo'q",
-    "saved": "Saqlandi"
+    "saved": "Saqlandi",
+    "bioPlaceholder": "O'zingiz haqingizda"
   },
   "seller": {
     "dashboard": "Sotuvchi paneli",
@@ -161,7 +168,20 @@
     "formErrors": "Saqlashdan oldin barcha majburiy maydonlarni to‘ldiring.",
     "noCategories": "Hozircha kategoriyalar yo‘q, shuning uchun mahsulotga kategoriya biriktirib bo‘lmaydi. Avval administratordan kategoriya qo‘shishni so‘rang.",
     "selectCategory": "Kategoriyani tanlang",
-    "oldPrice": "Eski narx (ixtiyoriy)"
+    "oldPrice": "Eski narx (ixtiyoriy)",
+    "variants": "Variantlar",
+    "addVariant": "Variant qo'shish",
+    "minOneVariant": "Kamida bitta variant kerak",
+    "images": "Rasmlar",
+    "addImage": "Rasm qo'shish",
+    "mainImage": "Asosiy",
+    "setMain": "Asosiy qilib belgilash",
+    "noImages": "Hali rasm yo'q",
+    "imageRemoved": "Rasm o'chirildi",
+    "newBadge": "Yangi",
+    "noProducts": "Hali mahsulot qo'shmagansiz",
+    "searchPlaceholder": "Mahsulot qidirish…",
+    "emptyOrdersHint": "Buyurtmalar shu yerda ko'rinadi"
   },
   "common": {
     "search": "Mahsulot qidirish…",
@@ -194,7 +214,9 @@
     "priceRange": "Narx",
     "sale": "Chegirma",
     "new": "Yangi",
-    "applyFilters": "Natijalarni ko'rsatish"
+    "applyFilters": "Natijalarni ko'rsatish",
+    "min": "Min",
+    "max": "Maks"
   },
   "footer": {
     "about": "Biz haqimizda",
@@ -204,7 +226,10 @@
     "returns": "Qaytarish",
     "tagline": "Onlayn kiyim do'koni. Qulay xarid, tez yetkazib berish.",
     "info": "Ma'lumot",
-    "payments": "To'lov usullari"
+    "payments": "To'lov usullari",
+    "sellers": "Sotuvchilar",
+    "becomeSeller": "Sotuvchi bo'lish",
+    "rights": "Barcha huquqlar himoyalangan"
   },
   "status": {
     "pending": "Qabul qilindi",
@@ -235,5 +260,20 @@
     "userDeleted": "Foydalanuvchi o‘chirildi",
     "confirmDeleteUser": "Ushbu foydalanuvchini o‘chirasizmi? Buni qaytarib bo‘lmaydi.",
     "confirmDeleteProduct": "Ushbu mahsulotni o‘chirasizmi? Buni qaytarib bo‘lmaydi."
+  },
+  "aria": {
+    "menu": "Menyuni ochish",
+    "closeMenu": "Menyuni yopish",
+    "theme": "Mavzuni almashtirish",
+    "favorites": "Sevimlilar",
+    "cart": "Savatcha",
+    "notifications": "Bildirishnomalar",
+    "account": "Hisob",
+    "addFavorite": "Sevimlilarga qo'shish",
+    "removeFavorite": "Sevimlilardan olib tashlash",
+    "language": "Tilni tanlash",
+    "removeImage": "Rasmni o'chirish",
+    "removeVariant": "Variantni o'chirish",
+    "clearSearch": "Qidiruvni tozalash"
   }
 }
