@@ -5,6 +5,7 @@ from rest_framework import status
 from decimal import Decimal
 from django.utils import timezone
 from datetime import timedelta
+import uuid
 
 from categories.models import Category
 from products.models import Product, ProductVariant
@@ -244,6 +245,21 @@ class AuthAndPermissionsTests(TestCase):
         )
         self.assertEqual(r.status_code, 201, r.data)
         self.assertRegex(r.data["order_number"], r"^S1N-\d{6}$")
+
+    def test_order_number_placeholder_fits_field_max_length(self):
+        # SQLite (used in local/dev testing) does not enforce CharField
+        # max_length at the database level, so an oversized value here
+        # would pass every test above and still work locally — it broke
+        # only in production (PostgreSQL, which does enforce it) the first
+        # time this shipped. Checking against the field's own validator
+        # catches that class of bug on any backend, including this one.
+        from django.core.validators import MaxLengthValidator
+
+        from orders.models import Order
+
+        field = Order._meta.get_field("order_number")
+        placeholder = f"S1N-TMP-{uuid.uuid4().hex[:20]}"
+        MaxLengthValidator(field.max_length)(placeholder)
 
     def test_favorite_toggle_and_is_favorited_flag(self):
         self.client.force_authenticate(self.buyer)

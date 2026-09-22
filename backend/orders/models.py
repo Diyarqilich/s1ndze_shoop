@@ -56,7 +56,13 @@ class Order(models.Model):
             # Placeholder to satisfy the unique/non-null constraint until the
             # row has a primary key — replaced below with a short, readable,
             # sequential number instead of a raw UUID fragment.
-            self.order_number = f"S1N-TMP-{uuid.uuid4().hex}"
+            # Must fit within order_number's max_length (32): "S1N-TMP-" (8)
+            # + 20 hex chars = 28, with margin. SQLite won't enforce
+            # max_length and silently accepts an oversized value, but
+            # PostgreSQL (production) rejects it at INSERT time — which is
+            # exactly why this only broke in production, not in local
+            # testing against SQLite.
+            self.order_number = f"S1N-TMP-{uuid.uuid4().hex[:20]}"
         super().save(*args, **kwargs)
         if is_new and self.order_number.startswith("S1N-TMP-"):
             self.order_number = f"S1N-{self.pk:06d}"
