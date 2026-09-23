@@ -5,24 +5,29 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
   ArrowLeft,
+  CalendarDays,
   CheckCircle2,
   Clock,
   ImageOff,
   ImagePlus,
   Loader2,
+  MapPin,
   Package,
   PackagePlus,
   PackageSearch,
+  Phone,
   Plus,
   Search,
   ShoppingCart,
   Trash2,
+  UserRound,
   Wallet,
 } from 'lucide-react'
 import { categoriesApi, sellerApi, unwrapList } from '@/services/shop'
 import { getErrorMessage } from '@/services/api'
 import { formatPrice, cn, categoryLabel } from '@/utils/format'
 import type { Product } from '@/types'
+import { useAuthStore } from '@/store/authStore'
 import { useEffect, useMemo, useState } from 'react'
 
 export function SellerDashboard() {
@@ -497,6 +502,7 @@ export function SellerProductFormPage() {
 
 export function SellerOrdersPage() {
   const { t } = useTranslation()
+  const currentUser = useAuthStore((s) => s.user)
   const { data, isLoading } = useQuery({ queryKey: ['seller-orders'], queryFn: sellerApi.orders })
   const orders = (data || []) as import('@/types').Order[]
 
@@ -521,18 +527,64 @@ export function SellerOrdersPage() {
           <p className="text-sm">{t('seller.emptyOrdersHint')}</p>
         </div>
       ) : (
-        <div className="mt-8 space-y-3">
-          {orders.map((o) => (
-            <div key={o.id} className="flex items-center justify-between rounded-2xl border border-line p-4 dark:border-[#242424]">
-              <div>
-                <span className="font-medium">{o.order_number}</span>
-                <p className="mt-1 text-sm text-muted">{formatPrice(o.total_price)}</p>
+        <div className="mt-8 space-y-4">
+          {orders.map((o) => {
+            // An order can span several sellers' products — only show this
+            // seller's own items and their own share of the total, not the
+            // whole cart (which could belong partly to someone else).
+            const myItems = o.items.filter((i) => i.seller === currentUser?.id)
+            const myTotal = myItems.reduce((sum, i) => sum + Number(i.subtotal), 0)
+            return (
+              <div key={o.id} className="rounded-2xl border border-line p-5 dark:border-[#242424]">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <span className="font-medium">{o.order_number}</span>
+                    <p className="mt-1 flex items-center gap-1.5 text-xs text-muted">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      {new Date(o.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                  <span className={cn('rounded-full px-3 py-1 text-xs font-medium', statusColor[o.status] || 'bg-line text-muted')}>
+                    {t(`status.${o.status}`)}
+                  </span>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-1.5 border-y border-line py-3 text-sm dark:border-[#242424]">
+                  <p className="flex items-center gap-2">
+                    <UserRound className="h-3.5 w-3.5 shrink-0 text-muted" />
+                    {o.first_name} {o.last_name}
+                    <span className="text-muted">·</span>
+                    <Phone className="h-3.5 w-3.5 shrink-0 text-muted" />
+                    {o.phone}
+                  </p>
+                  <p className="flex items-center gap-2 text-muted">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    {o.city}, {o.address}
+                  </p>
+                </div>
+
+                <div className="mt-3 space-y-1.5">
+                  {myItems.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between text-sm">
+                      <span>
+                        {item.product_name}
+                        <span className="text-muted">
+                          {' '}
+                          · {item.size}/{item.color} × {item.quantity}
+                        </span>
+                      </span>
+                      <span className="font-medium">{formatPrice(item.subtotal)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-3 flex items-center justify-between border-t border-line pt-3 text-sm dark:border-[#242424]">
+                  <span className="text-muted">{t('seller.myTotal')}</span>
+                  <span className="font-semibold">{formatPrice(myTotal)}</span>
+                </div>
               </div>
-              <span className={cn('rounded-full px-3 py-1 text-xs font-medium', statusColor[o.status] || 'bg-line text-muted')}>
-                {t(`status.${o.status}`)}
-              </span>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

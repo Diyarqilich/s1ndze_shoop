@@ -182,7 +182,8 @@
     "newBadge": "Новое",
     "noProducts": "Вы пока не добавили товары",
     "searchPlaceholder": "Поиск товаров…",
-    "emptyOrdersHint": "Заказы появятся здесь"
+    "emptyOrdersHint": "Заказы появятся здесь",
+    "myTotal": "Моя доля"
   },
   "common": {
     "search": "Искать товары…",

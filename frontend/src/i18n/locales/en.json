@@ -182,7 +182,8 @@
     "newBadge": "New",
     "noProducts": "You haven't added any products yet",
     "searchPlaceholder": "Search products…",
-    "emptyOrdersHint": "Orders will appear here"
+    "emptyOrdersHint": "Orders will appear here",
+    "myTotal": "My share"
   },
   "common": {
     "search": "Search products…",

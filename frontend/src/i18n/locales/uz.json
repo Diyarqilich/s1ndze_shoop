@@ -182,7 +182,8 @@
     "newBadge": "Yangi",
     "noProducts": "Hali mahsulot qo'shmagansiz",
     "searchPlaceholder": "Mahsulot qidirish…",
-    "emptyOrdersHint": "Buyurtmalar shu yerda ko'rinadi"
+    "emptyOrdersHint": "Buyurtmalar shu yerda ko'rinadi",
+    "myTotal": "Mening ulushim"
   },
   "common": {
     "search": "Mahsulot qidirish…",

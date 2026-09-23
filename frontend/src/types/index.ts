@@ -105,6 +105,7 @@ export interface OrderItem {
   price: string
   quantity: number
   subtotal: string
+  seller?: number
 }
 
 export interface Order {
