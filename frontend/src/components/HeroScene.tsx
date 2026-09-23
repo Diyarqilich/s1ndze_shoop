@@ -2,10 +2,11 @@ import { useEffect, useRef } from 'react'
 
 /**
  * Replaces the old 2x2 real-photo grid with a single generated, animated
- * "hologram" composition (t-shirt + sneaker line art) plus a small bear
- * mascot that playfully dodges the cursor. Everything here is decorative —
- * the hero's real content (heading, subtitle, CTAs) lives in the text
- * column next to this — so the whole scene is aria-hidden.
+ * "hologram" sneaker (an original stylized high-top silhouette — no brand
+ * marks) plus a small bear mascot that playfully dodges the cursor and
+ * flushes red while it's fleeing. Everything here is decorative — the
+ * hero's real content (heading, subtitle, CTAs) lives in the text column
+ * next to this — so the whole scene is aria-hidden.
  *
  * Perf/accessibility, per how this is meant to behave:
  * - One requestAnimationFrame loop drives all motion via direct
@@ -18,7 +19,6 @@ import { useEffect, useRef } from 'react'
  */
 export function HeroScene() {
   const containerRef = useRef<HTMLDivElement>(null)
-  const teeRef = useRef<HTMLDivElement>(null)
   const sneakerRef = useRef<HTMLDivElement>(null)
   const bearRef = useRef<HTMLDivElement>(null)
 
@@ -33,9 +33,8 @@ export function HeroScene() {
     let raf = 0
     let mouse: { x: number; y: number } | null = null
     const bear = { x: 0, y: 0 }
-    const tee = { x: 0, y: 0 }
     const sneaker = { x: 0, y: 0 }
-    const bearHome = { xFrac: 0.7, yFrac: 0.72 }
+    const bearHome = { xFrac: 0.78, yFrac: 0.7 }
 
     const onMove = (e: MouseEvent) => {
       const rect = container.getBoundingClientRect()
@@ -52,25 +51,18 @@ export function HeroScene() {
       const cx = rect.width / 2
       const cy = rect.height / 2
 
-      // Subtle parallax: tee drifts slightly toward the cursor, sneaker
-      // drifts the opposite way — gives the scene a sense of depth.
-      let teeTX = 0
-      let teeTY = 0
+      // Subtle parallax: the sneaker drifts slightly away from the cursor,
+      // giving the scene a sense of depth.
       let snkTX = 0
       let snkTY = 0
       if (mouse) {
         const nx = (mouse.x - cx) / cx
         const ny = (mouse.y - cy) / cy
-        teeTX = nx * 10
-        teeTY = ny * 8
-        snkTX = nx * -14
-        snkTY = ny * -10
+        snkTX = nx * -12
+        snkTY = ny * -9
       }
-      tee.x += (teeTX - tee.x) * 0.08
-      tee.y += (teeTY - tee.y) * 0.08
       sneaker.x += (snkTX - sneaker.x) * 0.08
       sneaker.y += (snkTY - sneaker.y) * 0.08
-      if (teeRef.current) teeRef.current.style.transform = `translate(${tee.x.toFixed(2)}px, ${tee.y.toFixed(2)}px)`
       if (sneakerRef.current) sneakerRef.current.style.transform = `translate(${sneaker.x.toFixed(2)}px, ${sneaker.y.toFixed(2)}px)`
 
       // Bear flees the cursor when it gets close, eases back to its resting
@@ -131,91 +123,106 @@ export function HeroScene() {
       <div className="hologram-scanline" />
 
       <div
-        ref={teeRef}
-        className="anim-float absolute left-[6%] top-[8%] w-[46%] max-w-[190px]"
-        style={{ '--float-duration': '5s', '--float-rot': '-3deg' } as React.CSSProperties}
-      >
-        <svg viewBox="0 0 200 200" fill="none" className="hologram-piece w-full">
-          <defs>
-            <linearGradient id="heroTeeGrad" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#ff4fac" />
-              <stop offset="35%" stopColor="#7c5cff" />
-              <stop offset="65%" stopColor="#4fd8ff" />
-              <stop offset="100%" stopColor="#ff4fac" />
-            </linearGradient>
-          </defs>
-          <path
-            d="M70,40 L38,58 L55,92 L70,76 L70,172 L130,172 L130,76 L145,92 L162,58 L130,40 Q124,56 100,56 Q76,56 70,40 Z"
-            fill="url(#heroTeeGrad)"
-            fillOpacity="0.22"
-            stroke="url(#heroTeeGrad)"
-            strokeWidth="2.5"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
-
-      <div
         ref={sneakerRef}
-        className="anim-float absolute bottom-[10%] right-[2%] w-[58%] max-w-[260px]"
-        style={{ '--float-duration': '6s', '--float-rot': '2deg' } as React.CSSProperties}
+        className="anim-float absolute left-1/2 top-1/2 w-[78%] max-w-[340px] -translate-x-1/2 -translate-y-1/2"
+        style={{ '--float-duration': '5.5s', '--float-rot': '-2deg' } as React.CSSProperties}
       >
-        <svg viewBox="0 0 240 140" fill="none" className="hologram-piece w-full">
+        <svg viewBox="0 0 320 190" className="hologram-piece w-full">
           <defs>
-            <linearGradient id="heroSnkGrad" x1="0" y1="0" x2="240" y2="140" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#4fd8ff" />
-              <stop offset="50%" stopColor="#ff4fac" />
-              <stop offset="100%" stopColor="#7c5cff" />
+            <linearGradient id="heroSnkBody" x1="40" y1="20" x2="200" y2="110" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#ff4b4b" />
+              <stop offset="60%" stopColor="#d4102a" />
+              <stop offset="100%" stopColor="#9c0e22" />
+            </linearGradient>
+            <linearGradient id="heroSnkCap" x1="180" y1="60" x2="260" y2="130" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#fafafa" />
+              <stop offset="100%" stopColor="#d6d6d6" />
             </linearGradient>
           </defs>
+
+          {/* outsole */}
           <path
-            d="M14,92 Q10,82 20,76 Q34,64 58,58 L96,48 Q128,39 160,42 Q188,45 203,58 Q214,67 214,78 L212,90 Q222,96 220,106 Q217,115 203,116 L34,118 Q14,117 14,92 Z"
-            fill="url(#heroSnkGrad)"
-            fillOpacity="0.2"
-            stroke="url(#heroSnkGrad)"
-            strokeWidth="2.5"
-            strokeLinejoin="round"
+            d="M38,146 Q34,136 50,133 L250,124 Q272,126 277,140 Q280,153 262,158 L64,164 Q36,161 38,146 Z"
+            fill="#f0f0f0"
           />
+          <g stroke="#00000022" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="78" y1="151" x2="78" y2="160" />
+            <line x1="116" y1="147" x2="116" y2="157" />
+            <line x1="154" y1="143" x2="154" y2="154" />
+            <line x1="192" y1="139" x2="192" y2="150" />
+            <line x1="228" y1="134" x2="228" y2="146" />
+          </g>
+          <path d="M44,134 L246,126 Q266,128 270,138 L267,144 L58,150 Q40,147 44,134 Z" fill="#ffffff" />
+
+          {/* main body: heel + collar + tongue + vamp */}
           <path
-            d="M188,46 Q206,44 212,56 Q216,64 210,70 L200,60 Q194,52 188,46 Z"
-            fill="url(#heroSnkGrad)"
-            fillOpacity="0.3"
-            stroke="url(#heroSnkGrad)"
+            d="M50,128 C40,106 38,78 45,57 C50,41 60,29 76,25 C88,22 98,27 98,37 C98,45 92,49 88,55
+               C100,65 118,63 128,53 C124,43 128,31 140,27 C150,24 158,29 158,39 C158,49 150,55 148,63
+               C168,59 186,61 200,68 C196,84 196,104 204,122 C170,127 120,129 60,131 C55,131 51,131 50,128 Z"
+            fill="url(#heroSnkBody)"
+          />
+          <path d="M200,68 C196,84 196,104 204,122" stroke="#7c0c1c" strokeWidth="2" fill="none" strokeOpacity="0.6" />
+
+          {/* toe cap */}
+          <path
+            d="M200,68 C224,78 244,94 254,112 C259,121 258,127 249,130 L204,122 C196,104 196,84 200,68 Z"
+            fill="url(#heroSnkCap)"
+          />
+          <path d="M212,78 Q234,90 246,108" stroke="#00000015" strokeWidth="1.5" fill="none" />
+
+          {/* heel shading */}
+          <path
+            d="M50,128 C40,106 38,78 45,57 C50,41 60,29 76,25 L82,33 Q64,43 58,63 Q52,90 60,120 Z"
+            fill="#000000"
+            fillOpacity="0.18"
+          />
+
+          {/* ankle collar */}
+          <path d="M76,25 C86,21 96,24 97,34 C98,43 93,48 88,53 C79,49 71,41 67,31 Q70,27 76,25 Z" fill="#181818" />
+          <path d="M78,27 Q86,24 92,31" stroke="#ff6b6b" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+          <ellipse cx="64" cy="36" rx="8" ry="9" fill="#181818" stroke="#ff6b6b" strokeWidth="1.5" transform="rotate(-30 64 36)" />
+
+          {/* tongue */}
+          <path
+            d="M124,50 C118,41 120,29 133,24 C144,20 154,26 154,37 C154,47 146,53 144,60 L129,57 C126,55 125,52 124,50 Z"
+            fill="#141414"
+            stroke="#ff4b4b"
             strokeWidth="2"
           />
-          <path
-            d="M12,100 L218,104 Q226,112 216,122 Q206,130 186,130 L40,130 Q14,129 10,114 Q9,106 12,100 Z"
-            fill="url(#heroSnkGrad)"
-            fillOpacity="0.4"
-            stroke="url(#heroSnkGrad)"
-            strokeWidth="2.5"
-          />
-          <line x1="86" y1="70" x2="150" y2="54" stroke="url(#heroSnkGrad)" strokeWidth="2" strokeOpacity="0.7" strokeLinecap="round" />
-          <line x1="92" y1="82" x2="154" y2="66" stroke="url(#heroSnkGrad)" strokeWidth="2" strokeOpacity="0.7" strokeLinecap="round" />
-          <line x1="98" y1="94" x2="158" y2="78" stroke="url(#heroSnkGrad)" strokeWidth="2" strokeOpacity="0.7" strokeLinecap="round" />
-          <line x1="40" y1="113" x2="40" y2="124" stroke="url(#heroSnkGrad)" strokeWidth="1.5" strokeOpacity="0.5" />
-          <line x1="80" y1="115" x2="80" y2="127" stroke="url(#heroSnkGrad)" strokeWidth="1.5" strokeOpacity="0.5" />
-          <line x1="120" y1="116" x2="120" y2="128" stroke="url(#heroSnkGrad)" strokeWidth="1.5" strokeOpacity="0.5" />
-          <line x1="160" y1="117" x2="160" y2="129" stroke="url(#heroSnkGrad)" strokeWidth="1.5" strokeOpacity="0.5" />
+
+          {/* laces */}
+          <g stroke="#f5f5f5" strokeWidth="3.5" strokeLinecap="round">
+            <line x1="94" y1="57" x2="140" y2="41" />
+            <line x1="90" y1="69" x2="136" y2="53" />
+            <line x1="98" y1="81" x2="140" y2="65" />
+          </g>
+          <g fill="#0d0d0d">
+            <circle cx="94" cy="57" r="2.4" />
+            <circle cx="140" cy="41" r="2.4" />
+            <circle cx="90" cy="69" r="2.4" />
+            <circle cx="136" cy="53" r="2.4" />
+            <circle cx="98" cy="81" r="2.4" />
+            <circle cx="140" cy="65" r="2.4" />
+          </g>
         </svg>
       </div>
 
       <div ref={bearRef} className="hero-bear absolute left-[68%] top-[68%] w-[15%] max-w-[64px]">
         <svg viewBox="0 0 100 100" fill="none" className="hero-bear-svg w-full drop-shadow-[0_0_10px_rgba(233,30,140,0.5)]">
-          <circle cx="25" cy="25" r="15" fill="#0d0d0d" stroke="#E91E8C" strokeWidth="2.5" />
-          <circle cx="75" cy="25" r="15" fill="#0d0d0d" stroke="#E91E8C" strokeWidth="2.5" />
-          <circle cx="25" cy="25" r="7" fill="#E91E8C" fillOpacity="0.5" />
-          <circle cx="75" cy="25" r="7" fill="#E91E8C" fillOpacity="0.5" />
-          <circle cx="50" cy="55" r="34" fill="#0d0d0d" stroke="#E91E8C" strokeWidth="2.5" />
-          <ellipse cx="50" cy="66" rx="15" ry="11" fill="#E91E8C" fillOpacity="0.35" stroke="#E91E8C" strokeWidth="2" />
-          <circle cx="50" cy="61" r="3" fill="#E91E8C" />
+          <circle cx="25" cy="25" r="15" fill="#0d0d0d" stroke="currentColor" strokeWidth="2.5" />
+          <circle cx="75" cy="25" r="15" fill="#0d0d0d" stroke="currentColor" strokeWidth="2.5" />
+          <circle cx="25" cy="25" r="7" fill="currentColor" fillOpacity="0.5" />
+          <circle cx="75" cy="25" r="7" fill="currentColor" fillOpacity="0.5" />
+          <circle cx="50" cy="55" r="34" fill="#0d0d0d" stroke="currentColor" strokeWidth="2.5" />
+          <ellipse cx="50" cy="66" rx="15" ry="11" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="2" />
+          <circle cx="50" cy="61" r="3" fill="currentColor" />
           <g className="hero-bear-eyes-calm">
-            <circle cx="38" cy="50" r="3.5" fill="#E91E8C" />
-            <circle cx="62" cy="50" r="3.5" fill="#E91E8C" />
+            <circle cx="38" cy="50" r="3.5" fill="currentColor" />
+            <circle cx="62" cy="50" r="3.5" fill="currentColor" />
           </g>
           <g className="hero-bear-eyes-alert">
-            <path d="M34,50 Q38,46 42,50" stroke="#E91E8C" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-            <path d="M58,50 Q62,46 66,50" stroke="#E91E8C" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            <path d="M34,50 Q38,46 42,50" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            <path d="M58,50 Q62,46 66,50" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
           </g>
         </svg>
       </div>

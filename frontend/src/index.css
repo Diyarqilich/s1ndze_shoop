@@ -191,6 +191,16 @@
 .hero-bear-eyes-alert { opacity: 0; }
 .hero-bear.is-fleeing .hero-bear-eyes-calm { opacity: 0; }
 .hero-bear.is-fleeing .hero-bear-eyes-alert { opacity: 1; }
+/* Calm = brand magenta, flushes to red while fleeing. The SVG's strokes
+   and fills reference currentColor, so animating `color` here smoothly
+   cross-fades all of them together instead of juggling many properties. */
+.hero-bear-svg {
+  color: #E91E8C;
+  transition: color 0.25s ease;
+}
+.hero-bear.is-fleeing .hero-bear-svg {
+  color: #ff2d2d;
+}
 @keyframes bearBreathe {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.045); }
