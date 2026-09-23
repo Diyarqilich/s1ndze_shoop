@@ -1,26 +1,23 @@
 import { useEffect, useRef } from 'react'
+import type { CSSProperties } from 'react'
 
 /**
- * Replaces the old 2x2 real-photo grid with a single generated, animated
- * "hologram" sneaker (an original stylized high-top silhouette — no brand
- * marks) plus a small bear mascot that playfully dodges the cursor and
- * flushes red while it's fleeing. Everything here is decorative — the
- * hero's real content (heading, subtitle, CTAs) lives in the text column
- * next to this — so the whole scene is aria-hidden.
+ * Animated fashion hero scene.
  *
- * Perf/accessibility, per how this is meant to behave:
- * - One requestAnimationFrame loop drives all motion via direct
- *   `style.transform` writes (refs), never React state — so mouse-move
- *   never triggers a re-render.
- * - Disabled on touch devices (no fine pointer) and when the user has
- *   prefers-reduced-motion on; the CSS-only float/hologram-glow still
- *   apply in both of those cases (reduced-motion trims those too, in
- *   index.css), so the scene never just goes static-and-broken.
+ * Replaces the old sneaker + bear illustration with a stylized clothing
+ * composition: hoodie, T-shirt, denim jacket, jeans and a floating tag.
+ *
+ * Motion is driven by one requestAnimationFrame loop and direct DOM writes,
+ * so mouse movement does not trigger React re-renders. The scene respects
+ * prefers-reduced-motion and disables pointer interaction on coarse pointers.
  */
 export function HeroScene() {
   const containerRef = useRef<HTMLDivElement>(null)
-  const sneakerRef = useRef<HTMLDivElement>(null)
-  const bearRef = useRef<HTMLDivElement>(null)
+  const hoodieRef = useRef<HTMLDivElement>(null)
+  const shirtRef = useRef<HTMLDivElement>(null)
+  const jacketRef = useRef<HTMLDivElement>(null)
+  const jeansRef = useRef<HTMLDivElement>(null)
+  const tagRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const container = containerRef.current
@@ -32,17 +29,24 @@ export function HeroScene() {
 
     let raf = 0
     let mouse: { x: number; y: number } | null = null
-    const bear = { x: 0, y: 0 }
-    const sneaker = { x: 0, y: 0 }
-    const bearHome = { xFrac: 0.78, yFrac: 0.7 }
+
+    const pieces = {
+      hoodie: { x: 0, y: 0, rx: 0, ry: 0 },
+      shirt: { x: 0, y: 0, rx: 0, ry: 0 },
+      jacket: { x: 0, y: 0, rx: 0, ry: 0 },
+      jeans: { x: 0, y: 0, rx: 0, ry: 0 },
+      tag: { x: 0, y: 0, rx: 0, ry: 0 },
+    }
 
     const onMove = (e: MouseEvent) => {
       const rect = container.getBoundingClientRect()
       mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top }
     }
+
     const onLeave = () => {
       mouse = null
     }
+
     container.addEventListener('mousemove', onMove, { passive: true })
     container.addEventListener('mouseleave', onLeave, { passive: true })
 
@@ -51,58 +55,49 @@ export function HeroScene() {
       const cx = rect.width / 2
       const cy = rect.height / 2
 
-      // Subtle parallax: the sneaker drifts slightly away from the cursor,
-      // giving the scene a sense of depth.
-      let snkTX = 0
-      let snkTY = 0
-      if (mouse) {
-        const nx = (mouse.x - cx) / cx
-        const ny = (mouse.y - cy) / cy
-        snkTX = nx * -12
-        snkTY = ny * -9
-      }
-      sneaker.x += (snkTX - sneaker.x) * 0.08
-      sneaker.y += (snkTY - sneaker.y) * 0.08
-      if (sneakerRef.current) sneakerRef.current.style.transform = `translate(${sneaker.x.toFixed(2)}px, ${sneaker.y.toFixed(2)}px)`
+      const nx = mouse ? (mouse.x - cx) / Math.max(cx, 1) : 0
+      const ny = mouse ? (mouse.y - cy) / Math.max(cy, 1) : 0
 
-      // Bear flees the cursor when it gets close, eases back to its resting
-      // spot otherwise.
-      const bearHomeX = rect.width * bearHome.xFrac
-      const bearHomeY = rect.height * bearHome.yFrac
-      let targetX = bear.x * 0.9
-      let targetY = bear.y * 0.9
-      let fleeing = false
-      if (mouse) {
-        const bx = bearHomeX + bear.x
-        const by = bearHomeY + bear.y
-        const dx = bx - mouse.x
-        const dy = by - mouse.y
-        const dist = Math.hypot(dx, dy)
-        const THRESHOLD = 140
-        if (dist < THRESHOLD) {
-          fleeing = true
-          const strength = (THRESHOLD - dist) / THRESHOLD
-          const nx2 = dist > 0.01 ? dx / dist : 1
-          const ny2 = dist > 0.01 ? dy / dist : 0
-          targetX = bear.x + nx2 * strength * 22
-          targetY = bear.y + ny2 * strength * 22
-          const mag = Math.hypot(targetX, targetY)
-          const maxR = 65
-          if (mag > maxR) {
-            targetX = (targetX / mag) * maxR
-            targetY = (targetY / mag) * maxR
-          }
-        }
+      // Each layer has a different parallax strength to create depth.
+      const targets = {
+        hoodie: { x: nx * -14, y: ny * -10, rx: ny * 1.8, ry: nx * -2.2 },
+        shirt: { x: nx * -8, y: ny * -6, rx: ny * 1.2, ry: nx * -1.5 },
+        jacket: { x: nx * 11, y: ny * 8, rx: ny * -1.4, ry: nx * 2.0 },
+        jeans: { x: nx * -7, y: ny * 5, rx: ny * 0.8, ry: nx * -1.1 },
+        tag: { x: nx * 20, y: ny * 14, rx: ny * -3, ry: nx * 4 },
       }
-      bear.x += (targetX - bear.x) * 0.18
-      bear.y += (targetY - bear.y) * 0.18
-      if (bearRef.current) {
-        bearRef.current.style.transform = `translate(${bear.x.toFixed(2)}px, ${bear.y.toFixed(2)}px) rotate(${(bear.x * 0.15).toFixed(2)}deg)`
-        bearRef.current.classList.toggle('is-fleeing', fleeing)
+
+      const ease = 0.075
+
+      for (const [name, target] of Object.entries(targets)) {
+        const piece = pieces[name as keyof typeof pieces]
+        piece.x += (target.x - piece.x) * ease
+        piece.y += (target.y - piece.y) * ease
+        piece.rx += (target.rx - piece.rx) * ease
+        piece.ry += (target.ry - piece.ry) * ease
       }
+
+      const setTransform = (
+        ref: React.RefObject<HTMLDivElement | null>,
+        piece: { x: number; y: number; rx: number; ry: number },
+        extraRotation = 0,
+      ) => {
+        if (!ref.current) return
+        ref.current.style.transform =
+          `translate(${piece.x.toFixed(2)}px, ${piece.y.toFixed(2)}px) ` +
+          `rotateX(${piece.rx.toFixed(2)}deg) rotateY(${piece.ry.toFixed(2)}deg) ` +
+          `rotate(${extraRotation}deg)`
+      }
+
+      setTransform(hoodieRef, pieces.hoodie)
+      setTransform(shirtRef, pieces.shirt, -1.5)
+      setTransform(jacketRef, pieces.jacket, 2)
+      setTransform(jeansRef, pieces.jeans, -2)
+      setTransform(tagRef, pieces.tag, 8)
 
       raf = requestAnimationFrame(tick)
     }
+
     raf = requestAnimationFrame(tick)
 
     return () => {
@@ -113,7 +108,12 @@ export function HeroScene() {
   }, [])
 
   return (
-    <div ref={containerRef} aria-hidden="true" className="relative h-full min-h-[320px] w-full select-none">
+    <div
+      ref={containerRef}
+      aria-hidden="true"
+      className="relative h-full min-h-[320px] w-full select-none"
+      style={{ perspective: '900px' }}
+    >
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
         <span className="font-display text-[22vw] font-extrabold leading-none tracking-tighter text-white/[0.07] sm:text-[9rem]">
           S1NDZE
@@ -122,108 +122,217 @@ export function HeroScene() {
 
       <div className="hologram-scanline" />
 
+      {/* Soft ambient glow behind the clothes. */}
       <div
-        ref={sneakerRef}
-        className="anim-float absolute left-1/2 top-1/2 w-[78%] max-w-[340px] -translate-x-1/2 -translate-y-1/2"
-        style={{ '--float-duration': '5.5s', '--float-rot': '-2deg' } as React.CSSProperties}
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[58%] w-[58%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600/15 blur-3xl"
+        style={{ animation: 'hero-fashion-glow 4.5s ease-in-out infinite' }}
+      />
+
+      {/* Denim jacket: rear layer. */}
+      <div
+        ref={jacketRef}
+        className="anim-float absolute left-[19%] top-[17%] w-[55%] max-w-[245px]"
+        style={{
+          '--float-duration': '6.2s',
+          '--float-rot': '1.5deg',
+          transformStyle: 'preserve-3d',
+          zIndex: 2,
+        } as CSSProperties}
       >
-        <svg viewBox="0 0 320 190" className="hologram-piece w-full">
+        <svg viewBox="0 0 300 270" className="hologram-piece w-full drop-shadow-[0_24px_28px_rgba(0,0,0,0.35)]">
           <defs>
-            <linearGradient id="heroSnkBody" x1="40" y1="20" x2="200" y2="110" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#ff4b4b" />
-              <stop offset="60%" stopColor="#d4102a" />
-              <stop offset="100%" stopColor="#9c0e22" />
+            <linearGradient id="heroDenim" x1="55" y1="20" x2="250" y2="250" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#56718f" />
+              <stop offset="55%" stopColor="#294968" />
+              <stop offset="100%" stopColor="#152b43" />
             </linearGradient>
-            <linearGradient id="heroSnkCap" x1="180" y1="60" x2="260" y2="130" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#fafafa" />
-              <stop offset="100%" stopColor="#d6d6d6" />
+            <linearGradient id="heroDenimLight" x1="80" y1="60" x2="220" y2="220" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#7f9ab5" stopOpacity="0.75" />
+              <stop offset="100%" stopColor="#3b5873" stopOpacity="0.15" />
             </linearGradient>
           </defs>
 
-          {/* outsole */}
           <path
-            d="M38,146 Q34,136 50,133 L250,124 Q272,126 277,140 Q280,153 262,158 L64,164 Q36,161 38,146 Z"
-            fill="#f0f0f0"
+            d="M74 72 L111 42 L150 64 L189 42 L226 72 L249 206 Q218 231 150 237 Q82 231 51 206 Z"
+            fill="url(#heroDenim)"
+            stroke="#9db2c6"
+            strokeOpacity="0.35"
+            strokeWidth="3"
           />
-          <g stroke="#00000022" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="78" y1="151" x2="78" y2="160" />
-            <line x1="116" y1="147" x2="116" y2="157" />
-            <line x1="154" y1="143" x2="154" y2="154" />
-            <line x1="192" y1="139" x2="192" y2="150" />
-            <line x1="228" y1="134" x2="228" y2="146" />
+          <path d="M111 42 L150 64 L189 42 L177 229 L150 237 L123 229 Z" fill="#203c58" fillOpacity="0.9" />
+          <path d="M74 72 L103 97 L91 185 L51 206 Z" fill="url(#heroDenimLight)" />
+          <path d="M226 72 L197 97 L209 185 L249 206 Z" fill="#0f2439" fillOpacity="0.3" />
+
+          <path d="M111 42 L150 64 L189 42" fill="none" stroke="#b7c8d8" strokeWidth="3" strokeLinejoin="round" />
+          <path d="M123 75 L150 92 L177 75" fill="none" stroke="#b7c8d8" strokeWidth="2" strokeOpacity="0.55" />
+          <path d="M94 105 L122 115 L122 151 L94 143 Z" fill="#355673" stroke="#9db2c6" strokeOpacity="0.45" />
+          <path d="M178 115 L206 105 L206 143 L178 151 Z" fill="#355673" stroke="#9db2c6" strokeOpacity="0.45" />
+
+          <g fill="#d9e2ea">
+            <circle cx="150" cy="100" r="4" />
+            <circle cx="150" cy="126" r="4" />
+            <circle cx="150" cy="152" r="4" />
+            <circle cx="150" cy="178" r="4" />
           </g>
-          <path d="M44,134 L246,126 Q266,128 270,138 L267,144 L58,150 Q40,147 44,134 Z" fill="#ffffff" />
-
-          {/* main body: heel + collar + tongue + vamp */}
-          <path
-            d="M50,128 C40,106 38,78 45,57 C50,41 60,29 76,25 C88,22 98,27 98,37 C98,45 92,49 88,55
-               C100,65 118,63 128,53 C124,43 128,31 140,27 C150,24 158,29 158,39 C158,49 150,55 148,63
-               C168,59 186,61 200,68 C196,84 196,104 204,122 C170,127 120,129 60,131 C55,131 51,131 50,128 Z"
-            fill="url(#heroSnkBody)"
-          />
-          <path d="M200,68 C196,84 196,104 204,122" stroke="#7c0c1c" strokeWidth="2" fill="none" strokeOpacity="0.6" />
-
-          {/* toe cap */}
-          <path
-            d="M200,68 C224,78 244,94 254,112 C259,121 258,127 249,130 L204,122 C196,104 196,84 200,68 Z"
-            fill="url(#heroSnkCap)"
-          />
-          <path d="M212,78 Q234,90 246,108" stroke="#00000015" strokeWidth="1.5" fill="none" />
-
-          {/* heel shading */}
-          <path
-            d="M50,128 C40,106 38,78 45,57 C50,41 60,29 76,25 L82,33 Q64,43 58,63 Q52,90 60,120 Z"
-            fill="#000000"
-            fillOpacity="0.18"
-          />
-
-          {/* ankle collar */}
-          <path d="M76,25 C86,21 96,24 97,34 C98,43 93,48 88,53 C79,49 71,41 67,31 Q70,27 76,25 Z" fill="#181818" />
-          <path d="M78,27 Q86,24 92,31" stroke="#ff6b6b" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-          <ellipse cx="64" cy="36" rx="8" ry="9" fill="#181818" stroke="#ff6b6b" strokeWidth="1.5" transform="rotate(-30 64 36)" />
-
-          {/* tongue */}
-          <path
-            d="M124,50 C118,41 120,29 133,24 C144,20 154,26 154,37 C154,47 146,53 144,60 L129,57 C126,55 125,52 124,50 Z"
-            fill="#141414"
-            stroke="#ff4b4b"
-            strokeWidth="2"
-          />
-
-          {/* laces */}
-          <g stroke="#f5f5f5" strokeWidth="3.5" strokeLinecap="round">
-            <line x1="94" y1="57" x2="140" y2="41" />
-            <line x1="90" y1="69" x2="136" y2="53" />
-            <line x1="98" y1="81" x2="140" y2="65" />
-          </g>
-          <g fill="#0d0d0d">
-            <circle cx="94" cy="57" r="2.4" />
-            <circle cx="140" cy="41" r="2.4" />
-            <circle cx="90" cy="69" r="2.4" />
-            <circle cx="136" cy="53" r="2.4" />
-            <circle cx="98" cy="81" r="2.4" />
-            <circle cx="140" cy="65" r="2.4" />
-          </g>
+          <path d="M150 65 V230" stroke="#b9c9d7" strokeOpacity="0.3" strokeWidth="2" />
+          <path d="M69 201 Q150 224 231 201" fill="none" stroke="#b9c9d7" strokeOpacity="0.18" strokeWidth="3" />
         </svg>
       </div>
 
-      <div ref={bearRef} className="hero-bear absolute left-[68%] top-[68%] w-[15%] max-w-[64px]">
-        <svg viewBox="0 0 100 100" fill="none" className="hero-bear-svg w-full drop-shadow-[0_0_10px_rgba(233,30,140,0.5)]">
-          <circle cx="25" cy="25" r="15" fill="#0d0d0d" stroke="currentColor" strokeWidth="2.5" />
-          <circle cx="75" cy="25" r="15" fill="#0d0d0d" stroke="currentColor" strokeWidth="2.5" />
-          <circle cx="25" cy="25" r="7" fill="currentColor" fillOpacity="0.5" />
-          <circle cx="75" cy="25" r="7" fill="currentColor" fillOpacity="0.5" />
-          <circle cx="50" cy="55" r="34" fill="#0d0d0d" stroke="currentColor" strokeWidth="2.5" />
-          <ellipse cx="50" cy="66" rx="15" ry="11" fill="currentColor" fillOpacity="0.35" stroke="currentColor" strokeWidth="2" />
-          <circle cx="50" cy="61" r="3" fill="currentColor" />
-          <g className="hero-bear-eyes-calm">
-            <circle cx="38" cy="50" r="3.5" fill="currentColor" />
-            <circle cx="62" cy="50" r="3.5" fill="currentColor" />
+      {/* T-shirt: floating behind the hoodie, slightly offset. */}
+      <div
+        ref={shirtRef}
+        className="anim-float absolute left-[38%] top-[13%] w-[46%] max-w-[210px]"
+        style={{
+          '--float-duration': '5.7s',
+          '--float-rot': '-1deg',
+          transformStyle: 'preserve-3d',
+          zIndex: 3,
+        } as CSSProperties}
+      >
+        <svg viewBox="0 0 260 260" className="hologram-piece w-full drop-shadow-[0_22px_24px_rgba(0,0,0,0.32)]">
+          <defs>
+            <linearGradient id="heroShirt" x1="50" y1="30" x2="220" y2="235" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#f7f7f7" />
+              <stop offset="55%" stopColor="#dedede" />
+              <stop offset="100%" stopColor="#aaa" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M86 48 L111 28 Q130 43 149 28 L174 48 L224 76 L201 116 L176 103 L180 226 Q130 244 80 226 L84 103 L59 116 L36 76 Z"
+            fill="url(#heroShirt)"
+            stroke="#fff"
+            strokeOpacity="0.75"
+            strokeWidth="3"
+            strokeLinejoin="round"
+          />
+          <path d="M111 29 Q130 52 149 29" fill="none" stroke="#a8a8a8" strokeWidth="4" />
+          <path d="M83 103 L112 112 L112 223" fill="none" stroke="#fff" strokeOpacity="0.45" strokeWidth="3" />
+          <path d="M177 103 L148 112 L148 223" fill="none" stroke="#777" strokeOpacity="0.22" strokeWidth="3" />
+          <path d="M103 150 Q130 137 157 150" fill="none" stroke="#d41431" strokeWidth="5" strokeLinecap="round" />
+          <path d="M110 166 Q130 156 150 166" fill="none" stroke="#d41431" strokeWidth="3" strokeLinecap="round" strokeOpacity="0.65" />
+        </svg>
+      </div>
+
+      {/* Hoodie: main focal point. */}
+      <div
+        ref={hoodieRef}
+        className="anim-float absolute left-1/2 top-[25%] w-[66%] max-w-[300px] -translate-x-1/2"
+        style={{
+          '--float-duration': '5.2s',
+          '--float-rot': '-1.2deg',
+          transformStyle: 'preserve-3d',
+          zIndex: 5,
+        } as CSSProperties}
+      >
+        <svg viewBox="0 0 340 300" className="hologram-piece w-full drop-shadow-[0_30px_34px_rgba(0,0,0,0.5)]">
+          <defs>
+            <linearGradient id="heroHoodie" x1="60" y1="40" x2="285" y2="280" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#ff4f55" />
+              <stop offset="48%" stopColor="#e31935" />
+              <stop offset="100%" stopColor="#920d25" />
+            </linearGradient>
+            <linearGradient id="heroHoodInside" x1="120" y1="42" x2="220" y2="110" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#191919" />
+              <stop offset="100%" stopColor="#070707" />
+            </linearGradient>
+          </defs>
+
+          {/* sleeves + body */}
+          <path
+            d="M105 74 L55 91 Q42 96 34 111 L18 164 Q14 179 28 186 L69 205 L90 159 L88 253 Q130 273 170 274 Q210 273 252 253 L250 159 L270 205 L311 186 Q326 179 322 164 L306 111 Q298 96 285 91 L235 74 L207 51 Q170 69 133 51 Z"
+            fill="url(#heroHoodie)"
+            stroke="#ff7373"
+            strokeOpacity="0.45"
+            strokeWidth="3"
+            strokeLinejoin="round"
+          />
+
+          {/* hood */}
+          <path
+            d="M116 64 Q120 24 170 20 Q220 24 224 64 L207 101 Q170 120 133 101 Z"
+            fill="url(#heroHoodInside)"
+            stroke="#ff666b"
+            strokeWidth="3"
+          />
+          <path d="M133 67 Q170 92 207 67" fill="none" stroke="#2c2c2c" strokeWidth="6" />
+
+          {/* hood strings */}
+          <g stroke="#f7d4d5" strokeWidth="3" strokeLinecap="round">
+            <line x1="145" y1="80" x2="141" y2="126" />
+            <line x1="195" y1="80" x2="199" y2="126" />
           </g>
-          <g className="hero-bear-eyes-alert">
-            <path d="M34,50 Q38,46 42,50" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-            <path d="M58,50 Q62,46 66,50" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+          <g fill="#f7d4d5">
+            <circle cx="141" cy="128" r="5" />
+            <circle cx="199" cy="128" r="5" />
           </g>
+
+          {/* chest panel */}
+          <path d="M111 117 Q170 135 229 117 L235 245 Q170 263 105 245 Z" fill="#000" fillOpacity="0.08" />
+          <path d="M108 191 Q170 214 232 191 L232 217 Q170 240 108 217 Z" fill="#770c20" fillOpacity="0.42" />
+          <path d="M110 191 Q170 212 230 191" fill="none" stroke="#ff7c7c" strokeOpacity="0.3" strokeWidth="2" />
+
+          {/* minimal chest mark */}
+          <path d="M151 150 L170 139 L189 150 L170 161 Z" fill="#fff" fillOpacity="0.92" />
+          <path d="M155 151 L170 157 L185 151" fill="none" stroke="#e31935" strokeWidth="2" />
+
+          {/* sleeve highlights */}
+          <path d="M55 96 Q74 110 91 121" fill="none" stroke="#ff8a8a" strokeOpacity="0.5" strokeWidth="4" />
+          <path d="M285 96 Q266 110 249 121" fill="none" stroke="#790d21" strokeOpacity="0.55" strokeWidth="4" />
+        </svg>
+      </div>
+
+      {/* Jeans: foreground base layer. */}
+      <div
+        ref={jeansRef}
+        className="anim-float absolute left-[30%] top-[61%] w-[55%] max-w-[250px]"
+        style={{
+          '--float-duration': '6.8s',
+          '--float-rot': '1deg',
+          transformStyle: 'preserve-3d',
+          zIndex: 6,
+        } as CSSProperties}
+      >
+        <svg viewBox="0 0 300 210" className="hologram-piece w-full drop-shadow-[0_20px_25px_rgba(0,0,0,0.42)]">
+          <defs>
+            <linearGradient id="heroJeans" x1="40" y1="30" x2="260" y2="180" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#607fa2" />
+              <stop offset="55%" stopColor="#315779" />
+              <stop offset="100%" stopColor="#172f4c" />
+            </linearGradient>
+          </defs>
+          <path d="M51 32 Q91 17 132 31 L149 83 L176 31 Q214 17 249 32 L274 173 Q218 195 150 189 Q82 195 26 173 Z" fill="url(#heroJeans)" stroke="#8ba6c0" strokeOpacity="0.45" strokeWidth="3" />
+          <path d="M132 31 L150 83 L176 31" fill="#1d3d5d" fillOpacity="0.85" />
+          <path d="M70 44 L85 164" stroke="#a7bad0" strokeOpacity="0.3" strokeWidth="3" />
+          <path d="M230 44 L215 164" stroke="#0d2137" strokeOpacity="0.55" strokeWidth="4" />
+          <path d="M92 38 Q150 52 208 38" fill="none" stroke="#d5e0eb" strokeOpacity="0.38" strokeWidth="3" />
+          <path d="M88 58 L117 68 L113 101 L84 94 Z" fill="#274b6d" stroke="#a6bbcf" strokeOpacity="0.35" />
+          <path d="M183 68 L212 58 L216 94 L187 101 Z" fill="#274b6d" stroke="#a6bbcf" strokeOpacity="0.35" />
+          <path d="M150 84 L150 185" stroke="#c0d0df" strokeOpacity="0.24" strokeWidth="3" />
+          <path d="M29 171 Q83 190 150 184 Q217 190 271 171" fill="none" stroke="#b4c7d9" strokeOpacity="0.24" strokeWidth="3" />
+        </svg>
+      </div>
+
+      {/* Floating clothing tag. */}
+      <div
+        ref={tagRef}
+        className="anim-float absolute left-[72%] top-[23%] w-[17%] max-w-[72px]"
+        style={{
+          '--float-duration': '4.4s',
+          '--float-rot': '4deg',
+          transformStyle: 'preserve-3d',
+          zIndex: 8,
+        } as CSSProperties}
+      >
+        <svg viewBox="0 0 100 130" className="hologram-piece w-full drop-shadow-[0_10px_18px_rgba(0,0,0,0.45)]">
+          <path d="M20 9 H75 L91 25 V119 H9 V9 Z" fill="#151515" stroke="#ff3e55" strokeWidth="3" />
+          <circle cx="25" cy="24" r="5" fill="#ff3e55" />
+          <path d="M37 48 H67" stroke="#fff" strokeWidth="4" strokeLinecap="round" />
+          <path d="M37 61 H67" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeOpacity="0.55" />
+          <path d="M37 83 H63" stroke="#ff3e55" strokeWidth="4" strokeLinecap="round" />
+          <text x="50" y="106" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700" fontFamily="sans-serif">
+            S1NDZE
+          </text>
         </svg>
       </div>
     </div>
