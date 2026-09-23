@@ -46,7 +46,7 @@ export function Footer() {
           </ul>
           <p className="mt-4 text-xs font-medium uppercase tracking-wide text-muted">{t('footer.payments')}</p>
           <div className="mt-2 flex flex-wrap gap-2 text-[10px] uppercase">
-            {['Cash', 'Click', 'Payme', 'Uzcard', 'Humo'].map((p) => (
+            {[t('checkout.cash'), 'Click', 'Payme', 'Uzcard', 'Humo'].map((p) => (
               <span key={p} className="rounded-md border border-line px-2 py-1 dark:border-[#333]">{p}</span>
             ))}
           </div>

@@ -89,7 +89,8 @@
     "city": "Shahar",
     "address": "Manzil",
     "comment": "Izoh",
-    "trackHint": "Yetkazib berish holati haqida sizga xabar beramiz."
+    "trackHint": "Yetkazib berish holati haqida sizga xabar beramiz.",
+    "cash": "Naqd"
   },
   "auth": {
     "loginTitle": "Kirish",
@@ -275,5 +276,24 @@
     "removeImage": "Rasmni o'chirish",
     "removeVariant": "Variantni o'chirish",
     "clearSearch": "Qidiruvni tozalash"
+  },
+  "categories": {
+    "men": "Erkaklar",
+    "women": "Ayollar",
+    "kids": "Bolalar",
+    "shoes": "Poyabzal",
+    "accessories": "Aksessuarlar",
+    "t-shirts": "Futbolkalar",
+    "hoodies": "Xudilar",
+    "sweatshirts": "Svitshotlar",
+    "shirts": "Ko'ylaklar",
+    "pants": "Shimlar",
+    "jeans": "Jinsi shim",
+    "jackets": "Kurtkalar",
+    "coats": "Paltolar",
+    "sneakers": "Krossovkalar",
+    "bags": "Sumkalar",
+    "caps": "Kepkalar",
+    "accessories-misc": "Boshqa aksessuarlar"
   }
 }

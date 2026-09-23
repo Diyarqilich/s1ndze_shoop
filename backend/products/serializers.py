@@ -27,6 +27,7 @@ class ProductListSerializer(serializers.ModelSerializer):
     reviews_count = serializers.SerializerMethodField()
     discount_percent = serializers.SerializerMethodField()
     category_name = serializers.CharField(source="category.name", read_only=True)
+    category_slug = serializers.CharField(source="category.slug", read_only=True)
     total_stock = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
 
@@ -51,6 +52,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             "discount_percent",
             "category",
             "category_name",
+            "category_slug",
             "total_stock",
             "is_favorited",
             "created_at",

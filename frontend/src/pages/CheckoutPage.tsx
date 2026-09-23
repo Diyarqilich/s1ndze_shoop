@@ -147,7 +147,7 @@ export function CheckoutPage() {
             {(['cash', 'click', 'payme', 'uzcard', 'humo'] as const).map((m) => (
               <label key={m} className="cursor-pointer border px-4 py-2 text-sm uppercase has-[:checked]:border-accent has-[:checked]:text-accent">
                 <input type="radio" value={m} {...register('payment_method')} className="sr-only" />
-                {m}
+                {m === 'cash' ? t('checkout.cash') : m}
               </label>
             ))}
           </div>

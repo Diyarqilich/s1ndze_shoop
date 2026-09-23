@@ -58,6 +58,7 @@ export interface Product {
   discount_percent: number
   category: number
   category_name: string
+  category_slug: string
   total_stock: number
   is_favorited: boolean
   created_at: string

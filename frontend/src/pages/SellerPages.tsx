@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { categoriesApi, sellerApi, unwrapList } from '@/services/shop'
 import { getErrorMessage } from '@/services/api'
-import { formatPrice, cn } from '@/utils/format'
+import { formatPrice, cn, categoryLabel } from '@/utils/format'
 import type { Product } from '@/types'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -362,7 +362,7 @@ export function SellerProductFormPage() {
               <option value="">{t('seller.category')} *</option>
               {flatCats.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name}
+                  {categoryLabel(t, c.slug, c.name)}
                 </option>
               ))}
             </select>

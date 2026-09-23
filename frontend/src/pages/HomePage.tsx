@@ -16,6 +16,7 @@ import {
 import { ProductCard, ProductSkeleton } from '@/components/ProductCard'
 import { categoriesApi, productsApi } from '@/services/shop'
 import { useRecentStore } from '@/store/recentStore'
+import { categoryLabel } from '@/utils/format'
 
 // Curated, non-gendered picks for the homepage strip — product type only,
 // never "Men / Women / Kids". Real categories are matched by slug against
@@ -39,7 +40,7 @@ export function HomePage() {
     const bySlug = new Map((categoriesFlat || []).map((c) => [c.slug, c]))
     const real = HOME_CATEGORIES.map((entry) => {
       const cat = bySlug.get(entry.slug)
-      return cat ? { ...entry, name: cat.name, to: `/products?category=${cat.slug}` } : null
+      return cat ? { ...entry, name: categoryLabel(t, cat.slug, cat.name), to: `/products?category=${cat.slug}` } : null
     }).filter((c): c is NonNullable<typeof c> => c !== null)
     return [
       ...real,

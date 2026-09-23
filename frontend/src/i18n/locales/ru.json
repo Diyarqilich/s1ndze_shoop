@@ -89,7 +89,8 @@
     "city": "Город",
     "address": "Адрес",
     "comment": "Комментарий",
-    "trackHint": "Мы сообщим вам о статусе доставки."
+    "trackHint": "Мы сообщим вам о статусе доставки.",
+    "cash": "Наличные"
   },
   "auth": {
     "loginTitle": "Вход",
@@ -275,5 +276,24 @@
     "removeImage": "Удалить фото",
     "removeVariant": "Удалить вариант",
     "clearSearch": "Очистить поиск"
+  },
+  "categories": {
+    "men": "Мужчинам",
+    "women": "Женщинам",
+    "kids": "Детям",
+    "shoes": "Обувь",
+    "accessories": "Аксессуары",
+    "t-shirts": "Футболки",
+    "hoodies": "Худи",
+    "sweatshirts": "Свитшоты",
+    "shirts": "Рубашки",
+    "pants": "Брюки",
+    "jeans": "Джинсы",
+    "jackets": "Куртки",
+    "coats": "Пальто",
+    "sneakers": "Кроссовки",
+    "bags": "Сумки",
+    "caps": "Кепки",
+    "accessories-misc": "Прочие аксессуары"
   }
 }

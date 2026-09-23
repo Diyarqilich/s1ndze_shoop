@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { AlertCircle, ChevronDown, PackageSearch, SlidersHorizontal, Tag, X } from 'lucide-react'
 import { ProductCard, ProductSkeleton } from '@/components/ProductCard'
 import { categoriesApi, productsApi } from '@/services/shop'
-import { cn } from '@/utils/format'
+import { cn, categoryLabel } from '@/utils/format'
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
@@ -54,7 +54,7 @@ export function ProductsPage() {
     const categorySlug = params.get('category')
     if (categorySlug) {
       const cat = (categories || []).find((c) => c.slug === categorySlug)
-      chips.push({ key: 'category', label: cat?.name || categorySlug })
+      chips.push({ key: 'category', label: cat ? categoryLabel(t, cat.slug, cat.name) : categorySlug })
     }
     if (params.get('size')) chips.push({ key: 'size', label: `${t('common.size')}: ${params.get('size')}` })
     if (params.get('min_price') || params.get('max_price')) {
@@ -100,7 +100,7 @@ export function ProductsPage() {
                     : 'text-ink/80 hover:bg-bg dark:text-white/80 dark:hover:bg-[#1e1e1e]',
                 )}
               >
-                {c.name}
+                {categoryLabel(t, c.slug, c.name)}
               </button>
             )
           })}

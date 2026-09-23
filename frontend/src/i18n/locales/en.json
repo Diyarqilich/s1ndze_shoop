@@ -89,7 +89,8 @@
     "city": "City",
     "address": "Address",
     "comment": "Comment",
-    "trackHint": "We'll keep you posted on your delivery status."
+    "trackHint": "We'll keep you posted on your delivery status.",
+    "cash": "Cash"
   },
   "auth": {
     "loginTitle": "Sign in",
@@ -275,5 +276,24 @@
     "removeImage": "Remove photo",
     "removeVariant": "Remove variant",
     "clearSearch": "Clear search"
+  },
+  "categories": {
+    "men": "Men",
+    "women": "Women",
+    "kids": "Kids",
+    "shoes": "Shoes",
+    "accessories": "Accessories",
+    "t-shirts": "T-Shirts",
+    "hoodies": "Hoodies",
+    "sweatshirts": "Sweatshirts",
+    "shirts": "Shirts",
+    "pants": "Pants",
+    "jeans": "Jeans",
+    "jackets": "Jackets",
+    "coats": "Coats",
+    "sneakers": "Sneakers",
+    "bags": "Bags",
+    "caps": "Caps",
+    "accessories-misc": "Other Accessories"
   }
 }

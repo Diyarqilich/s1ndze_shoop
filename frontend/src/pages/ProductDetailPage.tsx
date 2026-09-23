@@ -6,7 +6,7 @@ import { Heart, Minus, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { productsApi, reviewsApi, cartApi, favoritesApi, unwrapList } from '@/services/shop'
 import { getErrorMessage } from '@/services/api'
-import { formatPrice, cn } from '@/utils/format'
+import { formatPrice, cn, categoryLabel } from '@/utils/format'
 import { ProductCard } from '@/components/ProductCard'
 import { useRecentStore } from '@/store/recentStore'
 import { useAuthStore } from '@/store/authStore'
@@ -245,7 +245,7 @@ export function ProductDetailPage() {
               <span className="text-muted">{t('product.material')}:</span> {product.material || '—'}
             </p>
             <p>
-              <span className="text-muted">{t('product.details')}:</span> {product.category_name}
+              <span className="text-muted">{t('product.details')}:</span> {categoryLabel(t, product.category_slug, product.category_name)}
             </p>
           </div>
         </div>
