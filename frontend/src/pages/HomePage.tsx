@@ -14,7 +14,6 @@ import {
   Percent,
 } from 'lucide-react'
 import { ProductCard, ProductSkeleton } from '@/components/ProductCard'
-import { HeroScene } from '@/components/HeroScene'
 import { categoriesApi, productsApi } from '@/services/shop'
 import { useRecentStore } from '@/store/recentStore'
 import { categoryLabel } from '@/utils/format'
@@ -82,8 +81,34 @@ export function HomePage() {
                 </Link>
               </div>
             </div>
-            <div className="hidden md:block">
-              <HeroScene />
+            <div className="hidden grid-cols-2 gap-4 md:grid">
+              {(home?.sale || []).slice(0, 4).map((p, i) => {
+                const rotations = ['-3deg', '2deg', '-2deg', '3deg']
+                const durations = ['4.5s', '5.2s', '4.8s', '5.6s']
+                const offsets = ['', 'mt-5', 'mt-5', '']
+                return (
+                  <Link
+                    key={p.id}
+                    to={`/products/${p.slug}`}
+                    className={`anim-fade-up anim-float group block overflow-hidden rounded-xl border border-white/10 bg-white/10 shadow-lg shadow-black/20 ${offsets[i]}`}
+                    style={
+                      {
+                        animationDelay: `${i * 80}ms`,
+                        '--float-rot': rotations[i],
+                        '--float-duration': durations[i],
+                      } as React.CSSProperties
+                    }
+                  >
+                    {p.main_image && (
+                      <img
+                        src={p.main_image}
+                        alt={p.name}
+                        className="aspect-square w-full object-cover opacity-95 transition duration-500 group-hover:scale-110 group-hover:opacity-100"
+                      />
+                    )}
+                  </Link>
+                )
+              })}
             </div>
           </div>
         </div>
